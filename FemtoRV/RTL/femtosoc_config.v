@@ -12,6 +12,10 @@
 `include "CONFIGS/icestick_config.v"
 `endif
 
+`ifdef TINY
+`include "CONFIGS/tinyfpga_bx_config.v"
+`endif
+
 `ifdef ICE_BREAKER
 `include "CONFIGS/icebreaker_config.v"
 `endif
@@ -87,6 +91,10 @@
 `endif
 
 `ifdef ICE_SUGAR
+ `define ICE40
+`endif
+
+`ifdef TINY
  `define ICE40
 `endif
 

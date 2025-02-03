@@ -40,6 +40,8 @@ endmodule
   `include "pll_arty.v"
  `elsif CMODA7
   `include "pll_cmod_a7.v"
+ `elsif TINY
+  `include "pll_tinyfpga_bx.v"
  `endif
 `endif
 
