@@ -40,6 +40,8 @@ endmodule
   `include "pll_arty.v"
  `elsif CMODA7
   `include "pll_cmod_a7.v"
+ `elsif ICE40HX8K_BREAKOUT
+  `include "pll_ice40hx8k_breakout.v"
  `endif
 `endif
 
