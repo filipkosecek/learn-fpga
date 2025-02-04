@@ -1,9 +1,9 @@
 set_io pclk J3
 
 set_io D1 M12
-set_io D2 P14
-set_io D3 R14
-set_io D4 R15
+set_io D2 E4
+set_io D3 B2
+set_io D4 F5
 set_io D5 R16
 
 set_io TXD T16
@@ -14,4 +14,4 @@ set_io spi_miso P11
 set_io spi_mosi P12
 set_io spi_clk  R11
 
-set_io RESET C14
+set_io RESET B1
