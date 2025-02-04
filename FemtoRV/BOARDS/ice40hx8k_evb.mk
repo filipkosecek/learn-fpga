@@ -1,4 +1,4 @@
-YOSYS_ICE40HX8K_EVB_OPT=-DICE40HX8K_EVB -p "synth_ice40 -relut -top $(PROJECTNAME) -json $(PROJECTNAME).json"
+YOSYS_ICE40HX8K_EVB_OPT=-DICE40HX8K_EVB -q -p "synth_ice40 -relut -top $(PROJECTNAME) -json $(PROJECTNAME).json"
 NEXTPNR_ICE40HX8K_EVB_OPT=--json $(PROJECTNAME).json --pcf BOARDS/ice40hx8k_evb.pcf --asc $(PROJECTNAME).asc \
 			  --freq 20 --hx8k --package ct256 --opt-timing
 
