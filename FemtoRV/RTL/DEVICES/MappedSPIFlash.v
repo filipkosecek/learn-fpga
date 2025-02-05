@@ -46,7 +46,7 @@
 `endif
 
 /*
- * TODO: dual IO mode is supported, but the instruction format is different
+ * TODO: dual and quad IO mode is supported, but the instruction format is different
  * from e.g. Icestick.
  * The fast read mode is compatible with the current implementation.
  * Flash datasheet: https://www.alldatasheet.com/datasheet-pdf/pdf/443790/WINBOND/W25Q16BVSSIG.html
