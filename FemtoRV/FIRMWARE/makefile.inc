@@ -88,7 +88,7 @@ ifeq ($(BOARD),icesugar_nano)
 # TODO: make sure the placement is correct
 else
     ifeq ($(BOARD),ice40hx8k_evb)
-        TOOLCHAIN_PROG_CMD=iceprogduino -n -o 0x21500
+        TOOLCHAIN_PROG_CMD=iceprogduino -o 0x30000
     else
         TOOLCHAIN_PROG_CMD=iceprog -o 128k
     endif

@@ -8,8 +8,8 @@
 /* AT keyword specifies LMA (Load Memory Address) */
 
 MEMORY {
-    FLASH (rx)  : ORIGIN = 0x00821500, LENGTH = 0x100000    /* 1 MB in flash */
-    RAM   (rwx) : ORIGIN = 0x00000000, LENGTH = 0x2000      /* 8 kB in RAM   */
+    FLASH (rx)  : ORIGIN = 0x00830000, LENGTH = 0x100000    /* 1 MB in flash */
+    RAM   (rwx) : ORIGIN = 0x00000000, LENGTH = 0x2800      /* 10 kB in RAM  */
 }
 
 SECTIONS {
