@@ -69,4 +69,13 @@ module femtoRV32_bench();
    end
 `endif
 
+`ifdef BENCH_ICARUS
+   initial begin
+      $dumpfile(`VCD_FILE);
+      $dumpvars(0, femtoRV32_bench);
+   end
+
+   initial #`DURATION $finish;
+`endif
+
 endmodule

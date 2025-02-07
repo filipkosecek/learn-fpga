@@ -4,6 +4,10 @@
 `define BENCH
 `endif
 
+`ifdef BENCH_ICARUS
+`define BENCH
+`endif
+
 `ifdef ULX3S
 `include "CONFIGS/ulx3s_config.v"
 `endif
@@ -37,6 +41,10 @@
 `endif
 
 `ifdef BENCH_VERILATOR
+`include "CONFIGS/bench_config.v"
+`endif
+
+`ifdef BENCH_ICARUS
 `include "CONFIGS/bench_config.v"
 `endif
 

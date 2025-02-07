@@ -138,7 +138,9 @@ module femtosoc(
   // first cycles).
   // http://svn.clifford.at/handicraft/2017/ice40bramdelay/README
   // On the ICE40-UP5K, 4096 cycles do not suffice (-> 65536 cycles)
-`ifdef ICE_STICK
+`ifdef BENCH_ICARUS
+  reg [1:0] reset_cnt = 0;
+`elsif ICE_STICK
   reg [11:0] reset_cnt = 0;   
 `else   
   reg [15:0] reset_cnt = 0;

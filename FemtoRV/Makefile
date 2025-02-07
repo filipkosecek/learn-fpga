@@ -28,7 +28,7 @@ all:
 
 clean:
 	rm -f *.timings *.asc *.bin *.bit *config *.json *.svf \
-              *~ *.vvp *.dfu *.rpt *.blif femtosoc.txt FIRMWARE/config.mk
+              *~ *.vvp *.dfu *.rpt *.blif *.vcd femtosoc.txt FIRMWARE/config.mk
 
 TERMS=/dev/ttyUSB1 /dev/ttyUSB0 
 
