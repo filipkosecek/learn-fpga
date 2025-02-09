@@ -130,6 +130,10 @@
 
 `include "PROCESSOR/utils.v"
 
+`ifdef NRV_FEMTORV32_QUARK_SIMD
+ `include "PROCESSOR/femtorv32_quark_simd.v"
+`endif
+
 `ifdef NRV_FEMTORV32_QUARK
  `include "PROCESSOR/femtorv32_quark.v" // Minimalistic version of the processor for IceStick (RV32I)
 `endif
