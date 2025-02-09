@@ -136,7 +136,7 @@ FEMTORV32_LIBS_SMALL=-L$(RVTOOLCHAIN_LIB_DIR)\
 # Generate a "bare metal elf", to be loaded from address 0 (rule for conversion to .hex file in makefile.inc)
 # The generated ".hex" file is directly included in the Verilog files, for memory initialization
 %.baremetal.elf: %.o $(RV_BINARIES)
-	$(RVLD) $(RVLDFLAGS) -T$(FIRMWARE_DIR)/CRT/baremetal.ld $< -o $@ $(FEMTORV32_LIBS_SMALL) $(RVGCC_LIB)
+	$(RVLD) $(RVLDFLAGS) -T$(FIRMWARE_DIR)/CRT/baremetal.ld $< -o $@ $(FEMTORV32_LIBS) $(RVGCC_LIB)
 
 # Generate a "femtOS elf executable", to be loaded from address 0x10000 (rule for conversion to .bin file in makefile.inc)
 %.elf: %.o $(RV_BINARIES)
