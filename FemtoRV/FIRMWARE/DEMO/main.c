@@ -4,7 +4,7 @@
 #include "print_cycles.h"
 
 static volatile uint32_t *const led = 0x400004;
-static volatile char str[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+static volatile const char str[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 
 /*
  * first nop replacement: 01c3bec0
@@ -46,18 +46,16 @@ __attribute__((naked)) unsigned vector_strlen(const char *str) {
 
 int main(void)
 {
-	volatile unsigned i;
-	volatile uint64_t cycle_count;
+	volatile unsigned i = 0;
+	volatile uint64_t beg, end;
+	beg = cycles();
 #ifdef VECTORIZED
 	i = vector_strlen(str);
 #else
-	i = 0;
-	while (str[i] != 0)
-		++i;
+	for (i = 0; str[i] != 0; ++i);
 #endif
-
-	cycle_count = cycles();
-	print_cycles(cycle_count);
+	end = cycles();
+	print_cycles(end - beg);
 	print_length(i);
 	while (1);
 	return 0;
