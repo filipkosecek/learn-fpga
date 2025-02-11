@@ -16,4 +16,3 @@
 `define NRV_RAM 65536
 `define NRV_IO_HARDWARE_CONFIG
 `define NRV_CONFIGURED
-

@@ -4,7 +4,7 @@
 #include "print_cycles.h"
 
 static volatile uint32_t *const led = 0x400004;
-static volatile const char str[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+static volatile const char str[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 
 /*
  * first nop replacement: 01c3bec0
@@ -19,7 +19,8 @@ static volatile const char str[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
  * x29 - ctz result storage
  * x30 - dummy register used for garbage values
  */
-__attribute__((naked)) unsigned vector_strlen(const char *str) {
+__attribute__((naked)) unsigned vector_strlen(const char *str)
+{
 	asm volatile (
 		"vector_strlen:\n\t"
 		"addi x31, x10, 0\n\t"
@@ -42,17 +43,37 @@ __attribute__((naked)) unsigned vector_strlen(const char *str) {
 	);
 }
 
+__attribute__((naked)) unsigned my_strlen(const char *str)
+{
+	asm volatile (
+		"my_strlen:\n\t"
+		"addi x31, x10, 0\n\t"
+		"lui x30, 0\n\t"
+		"jal x5, my_strlen_loop\n\t"
+		"my_strlen_inc:\n\t"
+		"addi x30, x30, 1\n\t"
+		"addi x31, x31, 1\n\t"
+		"my_strlen_loop:\n\t"
+		"lb x5, 0(x31)\n\t"
+		"bne x5, x0, my_strlen_inc\n\t"
+		"my_strlen_ret:\n\t"
+		"addi x10, x30, 0\n\t"
+		"jalr x30, x1, 0\n\t"
+	);
+}
+
 #define VECTORIZED
 
 int main(void)
 {
-	volatile unsigned i = 0;
+	unsigned i = 0;
 	volatile uint64_t beg, end;
 	beg = cycles();
 #ifdef VECTORIZED
 	i = vector_strlen(str);
 #else
-	for (i = 0; str[i] != 0; ++i);
+//	i = my_strlen(str);
+	for (; str[i] != 0; ++i);
 #endif
 	end = cycles();
 	print_cycles(end - beg);
