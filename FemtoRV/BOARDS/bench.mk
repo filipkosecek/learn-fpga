@@ -15,7 +15,7 @@ BENCH.icarus_firmware_config:
 	BOARD=testbench TOOLS/make_config.sh -DBENCH_ICARUS
 	(cd FIRMWARE; make libs)
 
-BENCH.icarus: BENCH.icarus_firmware_config
+BENCH.icarus:
 	(cd RTL; iverilog -DBENCH_ICARUS -DDURATION=$(DURATION) -DVCD_FILE=$(VCD_FILE) -IPROCESSOR -IDEVICES femtosoc_bench.v \
          -o ../femtosoc_bench.vvp)
 	vvp femtosoc_bench.vvp
