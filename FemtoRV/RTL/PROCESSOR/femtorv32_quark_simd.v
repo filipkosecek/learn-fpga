@@ -150,11 +150,13 @@ module FemtoRV32(
         (rs2[7:0]   == byteValCmp)
     };
 
-    wire [31:0] multiCmpRes =
-        (multiCmpOp[MULTICMP16_bit] ? multiCmp               : 32'd0) |
-        (multiCmpOp[MULTICMP12_bit] ? {4'b0, multiCmp[11:0]} : 32'd0) |
-        (multiCmpOp[MULTICMP8_bit]  ? {8'b0, multiCmp[7:0]}  : 32'd0) |
-        (multiCmpOp[MULTICMP4_bit]  ? {12'b0, multiCmp[3:0]} : 32'd0) ;
+    wire [31:0] multiCmpRes;
+    assign multiCmpRes[31:16] = 0;
+    assign multiCmpRes[15:0] =
+        (multiCmpOp[MULTICMP16_bit] ? multiCmp               : 16'd0) |
+        (multiCmpOp[MULTICMP12_bit] ? {4'b0, multiCmp[11:0]} : 16'd0) |
+        (multiCmpOp[MULTICMP8_bit]  ? {8'b0, multiCmp[7:0]}  : 16'd0) |
+        (multiCmpOp[MULTICMP4_bit]  ? {12'b0, multiCmp[3:0]} : 16'd0) ;
 
     /***************************************************************************/
     // CTZ/CLZ
@@ -176,11 +178,11 @@ module FemtoRV32(
     endgenerate
 
     assign bitmanipResult =
-        zeroNibbles[0] ? {1'b0, 2'b00, zeroNibbleCount[0]} :
+                zeroNibbles[0] ? {1'b0, 2'b00, zeroNibbleCount[0]} :
                 zeroNibbles[1] ? {1'b0, 2'b01, zeroNibbleCount[1]} :
                 zeroNibbles[2] ? {1'b0, 2'b10, zeroNibbleCount[2]} :
-        zeroNibbles[3] ? {1'b0, 2'b11, zeroNibbleCount[3]} :
-                5'b10000; // error bit: all bits are 0
+                zeroNibbles[3] ? {1'b0, 2'b11, zeroNibbleCount[3]} :
+                5'b10000                                           ; // error bit: all data bits are 0
 
    /***************************************************************************/
    // The ALU. Does operations and tests combinatorially, except shifts.
