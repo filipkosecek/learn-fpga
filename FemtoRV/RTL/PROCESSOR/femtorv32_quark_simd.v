@@ -121,24 +121,22 @@ module FemtoRV32(
 
     wire [7:0] multiCmpOp = funct3Is;
     wire [7:0] byteValCmp = multiCmpOp[MULTICMP16_bit] ? Iimm[7:0] : rs1[7:0];
-    wire [15:0] multiCmp = {
-        (rs1[31:24] == byteValCmp),
-        (rs1[23:16] == byteValCmp),
-        (rs1[15:8]  == byteValCmp),
-        (rs1[7:0]   == byteValCmp),
-        (rs4[31:24] == byteValCmp),
-        (rs4[23:16] == byteValCmp),
-        (rs4[15:8]  == byteValCmp),
-        (rs4[7:0]   == byteValCmp),
-        (rs3[31:24] == byteValCmp),
-        (rs3[23:16] == byteValCmp),
-        (rs3[15:8]  == byteValCmp),
-        (rs3[7:0]   == byteValCmp),
-        (rs2[31:24] == byteValCmp),
-        (rs2[23:16] == byteValCmp),
-        (rs2[15:8]  == byteValCmp),
-        (rs2[7:0]   == byteValCmp)
-    };
+
+    /* define sources for the comparison */
+    wire [31:0] multiCmpRegs [3:0];
+    assign multiCmpRegs[0] = rs2;
+    assign multiCmpRegs[1] = rs3;
+    assign multiCmpRegs[2] = rs4;
+    assign multiCmpRegs[3] = rs1;
+
+    /* 16 byte compare */
+    wire [15:0] multiCmp;
+    for (i = 0; i <= 3; i = i + 1) begin
+        assign multiCmp[i * 4]     = (multiCmpRegs[i][7:0]   == byteValCmp);
+	assign multiCmp[i * 4 + 1] = (multiCmpRegs[i][15:8]  == byteValCmp);
+	assign multiCmp[i * 4 + 2] = (multiCmpRegs[i][23:16] == byteValCmp);
+	assign multiCmp[i * 4 + 3] = (multiCmpRegs[i][31:24] == byteValCmp);
+    end
 
     wire prefix_bitmask16 = multiCmpOp[MULTICMP16_bit];
     wire prefix_bitmask12 = prefix_bitmask16 | multiCmpOp[MULTICMP12_bit];
