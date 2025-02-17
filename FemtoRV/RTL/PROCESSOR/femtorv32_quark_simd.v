@@ -120,18 +120,8 @@ module FemtoRV32(
     localparam MULTICMP16_bit = 3;
 
     wire [7:0] multiCmpOp = funct3Is;
-//    wire [3:0] multiCmpOp = (1 << instr[13:12]);
-
-//    wire [6:0] funct7 = instr[31:25];
     wire [7:0] byteValCmp = multiCmpOp[MULTICMP16_bit] ? Iimm[7:0] : rs1[7:0];
-//    wire [7:0] byteValCmp = rs1[7:0];
     wire [15:0] multiCmp = {
-        /*
-        (rs5[31:24] == byteValCmp),
-        (rs5[23:16] == byteValCmp),
-        (rs5[15:8]  == byteValCmp),
-        (rs5[7:0]   == byteValCmp),
-        */
         (rs1[31:24] == byteValCmp),
         (rs1[23:16] == byteValCmp),
         (rs1[15:8]  == byteValCmp),
@@ -150,13 +140,19 @@ module FemtoRV32(
         (rs2[7:0]   == byteValCmp)
     };
 
-    wire [31:0] multiCmpRes;
-    assign multiCmpRes[31:16] = 0;
-    assign multiCmpRes[15:0] =
-        (multiCmpOp[MULTICMP16_bit] ? multiCmp               : 16'd0) |
-        (multiCmpOp[MULTICMP12_bit] ? {4'b0, multiCmp[11:0]} : 16'd0) |
-        (multiCmpOp[MULTICMP8_bit]  ? {8'b0, multiCmp[7:0]}  : 16'd0) |
-        (multiCmpOp[MULTICMP4_bit]  ? {12'b0, multiCmp[3:0]} : 16'd0) ;
+    wire prefix_bitmask16 = multiCmpOp[MULTICMP16_bit];
+    wire prefix_bitmask12 = prefix_bitmask16 | multiCmpOp[MULTICMP12_bit];
+    wire prefix_bitmask8  = prefix_bitmask12 | multiCmpOp[MULTICMP8_bit];
+    wire prefix_bitmask4  = prefix_bitmask8  | multiCmpOp[MULTICMP4_bit];
+
+    wire [15:0] multiCmpMask = {
+            {4{prefix_bitmask16}},
+            {4{prefix_bitmask12}},
+            {4{prefix_bitmask8}},
+            {4{prefix_bitmask4}}
+    };
+
+    wire [31:0] multiCmpRes = {16'b0, multiCmp & multiCmpMask};
 
     /***************************************************************************/
     // CTZ/CLZ
