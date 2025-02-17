@@ -32,7 +32,7 @@
 // Firmware generation flags for this processor
 `define NRV_ARCH     "rv32i"
 `define NRV_ABI      "ilp32"
-`define NRV_OPTIMIZE "-O3"
+`define NRV_OPTIMIZE "-Os"
 
 module FemtoRV32(
    input 	 clk,
@@ -100,7 +100,7 @@ module FemtoRV32(
    reg [31:0] rs2;
    reg [31:0] rs3;
    reg [31:0] rs4;
-   
+
    (* no_rw_check *)
    reg [31:0] registerFile [31:0];
 
@@ -119,16 +119,11 @@ module FemtoRV32(
     localparam MULTICMP12_bit = 2;
     localparam MULTICMP16_bit = 3;
 
-    localparam MULTICMP_MASK16 = 16'hffff;
-    localparam MULTICMP_MASK12 = 16'h0fff;
-    localparam MULTICMP_MASK8  = 16'h00ff;
-    localparam MULTICMP_MASK4  = 16'h000f;
+    wire [7:0] multiCmpOp = funct3Is;
+//    wire [3:0] multiCmpOp = (1 << instr[13:12]);
 
-//    wire [7:0] multiCmpOp = funct3Is;
-    wire [3:0] multiCmpOp = (1 << instr[13:12]);
-
-    wire [6:0] funct7 = instr[31:25];
-    wire [7:0] byteValCmp = multiCmpOp[MULTICMP16_bit] ? {instr[14], funct7} : rs1[7:0];
+//    wire [6:0] funct7 = instr[31:25];
+    wire [7:0] byteValCmp = multiCmpOp[MULTICMP16_bit] ? Iimm[7:0] : rs1[7:0];
 //    wire [7:0] byteValCmp = rs1[7:0];
     wire [15:0] multiCmp = {
         /*
@@ -156,10 +151,10 @@ module FemtoRV32(
     };
 
     wire [31:0] multiCmpRes =
-        (multiCmpOp[MULTICMP16_bit] ? multiCmp                   : 32'd0) |
-        (multiCmpOp[MULTICMP12_bit] ? multiCmp & MULTICMP_MASK12 : 32'd0) |
-        (multiCmpOp[MULTICMP8_bit]  ? multiCmp & MULTICMP_MASK8  : 32'd0) |
-        (multiCmpOp[MULTICMP4_bit]  ? multiCmp & MULTICMP_MASK4  : 32'd0) ;
+        (multiCmpOp[MULTICMP16_bit] ? multiCmp               : 32'd0) |
+        (multiCmpOp[MULTICMP12_bit] ? {4'b0, multiCmp[11:0]} : 32'd0) |
+        (multiCmpOp[MULTICMP8_bit]  ? {8'b0, multiCmp[7:0]}  : 32'd0) |
+        (multiCmpOp[MULTICMP4_bit]  ? {12'b0, multiCmp[3:0]} : 32'd0) ;
 
     /***************************************************************************/
     // CTZ/CLZ
@@ -428,9 +423,9 @@ module FemtoRV32(
         state[WAIT_INSTR_bit]: begin
            if(!mem_rbusy) begin // may be high when executing from SPI flash
               rs1 <= registerFile[mem_rdata[19:15]];
-              rs2 <= registerFile[mem_rdata[24:20]];
-	      rs3 <= registerFile[5'd5];
-	      rs4 <= registerFile[5'd6];
+              rs2 <= registerFile[(mem_rdata[6:2] == 5'b10000) ? 5'd5 : mem_rdata[24:20]];
+	      rs3 <= registerFile[5'd6];
+	      rs4 <= registerFile[5'd7];
               instr <= mem_rdata[31:2]; // Bits 0 and 1 are ignored (see
               state <= EXECUTE;         // also the declaration of instr).
            end
