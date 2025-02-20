@@ -113,9 +113,18 @@ module FemtoRV32(
    end
 
       /***************************************************************************/
-    // MultiCmp - x8-x15 are used
+    // MultiCmp
     /***************************************************************************/
+
+    /* SIMD_REG_COUNT can be from {2..8} */
     parameter SIMD_REG_COUNT = 4;
+
+    initial begin
+        if (SIMD_REG_COUNT < 2 || SIMD_REG_COUNT > 8) begin
+            $error("SIMD_REG_COUNT can be between {2..8}");
+	    $finish;
+        end
+    end
 
     // Mapping rs -> rv32i register index
     localparam [5 * 8 - 1 : 0] simdId = {
@@ -178,8 +187,8 @@ module FemtoRV32(
 
     generate
         for (i = 0; i <= 3; i = i + 1) begin
-            assign zeroNibbles[i] = (bitmanipOp[0] ? |bitmanipTarget[(i * 4 + 3):(i * 4)] : 0) |
-                        (bitmanipOp[1] ? |bitmanipTarget[((3 - i) * 4 + 3):((3 - i) * 4)] : 0);
+            assign zeroNibbles[i] = (bitmanipOp[0] ? |bitmanipTarget[i * 4 +: 4] : 0) |
+                        (bitmanipOp[1] ? |bitmanipTarget[(3 - i) * 4 +: 4] : 0);
             assign zeroNibbleCount[i] =     (bitmanipOp[0] ? {(~bitmanipTarget[i * 4 + 0] & ~bitmanipTarget[i * 4 + 1]), (~bitmanipTarget[i * 4 + 0] & (bitmanipTarget[i * 4 + 1] | ~bitmanipTarget[i * 4 + 2]))} : 0) |
                             (bitmanipOp[1] ? {(~bitmanipTarget[(3 - i) * 4 + 3] & ~bitmanipTarget[(3 - i) * 4 + 2]), (~bitmanipTarget[(3 - i) * 4 + 3] & (bitmanipTarget[(3 - i) * 4 + 2] | ~bitmanipTarget[(3 - i) * 4 + 1]))} : 0);
             end
