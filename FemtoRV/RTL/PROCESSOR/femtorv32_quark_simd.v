@@ -177,29 +177,31 @@ module FemtoRV32(
     end
 
     /***************************************************************************/
-    // CTZ/CLZ
+    // CTZ
     /***************************************************************************/
-    wire [3:0] zeroNibbles;
-    wire [1:0] zeroNibbleCount [3:0];
-    wire [7:0] bitmanipOp = funct3Is;
-    wire [4:0] bitmanipResult;
-    wire [15:0] bitmanipTarget = rs1[15:0];
+    wire [7:0] isNibNonZero;
+    wire [1:0] nibbleCTZ [7:0];
+    wire [5:0] bitmanipRes;
+    wire [31:0] bitmanipTarget = rs1;
 
-    generate
-        for (i = 0; i <= 3; i = i + 1) begin
-            assign zeroNibbles[i] = (bitmanipOp[0] ? |bitmanipTarget[i * 4 +: 4] : 0) |
-                        (bitmanipOp[1] ? |bitmanipTarget[(3 - i) * 4 +: 4] : 0);
-            assign zeroNibbleCount[i] =     (bitmanipOp[0] ? {(~bitmanipTarget[i * 4 + 0] & ~bitmanipTarget[i * 4 + 1]), (~bitmanipTarget[i * 4 + 0] & (bitmanipTarget[i * 4 + 1] | ~bitmanipTarget[i * 4 + 2]))} : 0) |
-                            (bitmanipOp[1] ? {(~bitmanipTarget[(3 - i) * 4 + 3] & ~bitmanipTarget[(3 - i) * 4 + 2]), (~bitmanipTarget[(3 - i) * 4 + 3] & (bitmanipTarget[(3 - i) * 4 + 2] | ~bitmanipTarget[(3 - i) * 4 + 1]))} : 0);
-            end
-    endgenerate
+    for (i = 0; i <= 7; i = i + 1) begin
+        assign isNibNonZero[i] = |bitmanipTarget[i * 4 +: 4];
+        assign nibbleCTZ[i] = {
+		(~bitmanipTarget[i * 4 + 0] & ~bitmanipTarget[i * 4 + 1]),
+		(~bitmanipTarget[i * 4 + 0] & (bitmanipTarget[i * 4 + 1] | ~bitmanipTarget[i * 4 + 2]))
+	};
+    end
 
-    assign bitmanipResult =
-                zeroNibbles[0] ? {1'b0, 2'b00, zeroNibbleCount[0]} :
-                zeroNibbles[1] ? {1'b0, 2'b01, zeroNibbleCount[1]} :
-                zeroNibbles[2] ? {1'b0, 2'b10, zeroNibbleCount[2]} :
-                zeroNibbles[3] ? {1'b0, 2'b11, zeroNibbleCount[3]} :
-                5'b10000                                           ; // error bit: all data bits are 0
+    assign bitmanipRes =
+                isNibNonZero[0] ? {1'b0, 3'b000, nibbleCTZ[0]} :
+                isNibNonZero[1] ? {1'b0, 3'b001, nibbleCTZ[1]} :
+                isNibNonZero[2] ? {1'b0, 3'b010, nibbleCTZ[2]} :
+                isNibNonZero[3] ? {1'b0, 3'b011, nibbleCTZ[3]} :
+		isNibNonZero[4] ? {1'b0, 3'b100, nibbleCTZ[4]} :
+		isNibNonZero[5] ? {1'b0, 3'b101, nibbleCTZ[5]} :
+		isNibNonZero[6] ? {1'b0, 3'b110, nibbleCTZ[6]} :
+		isNibNonZero[7] ? {1'b0, 3'b111, nibbleCTZ[7]} :
+                6'b100000                                           ; // error bit: all data bits are 0
 
    /***************************************************************************/
    // The ALU. Does operations and tests combinatorially, except shifts.
@@ -326,7 +328,7 @@ module FemtoRV32(
       (isJALR   | isJAL    ? PCplus4    : 32'b0) |  // JAL, JALR
       (isLoad              ? LOAD_data  : 32'b0) |  // Load
       (isMultiCmp          ? multiCmpRes : 32'b0) |
-      (isBitmanip         ? bitmanipResult : 32'b0);
+      (isBitmanip          ? bitmanipRes : 32'b0) ;
       
    /* verilator lint_on WIDTH */
 
