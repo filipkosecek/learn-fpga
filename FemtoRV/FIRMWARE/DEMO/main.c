@@ -32,7 +32,7 @@ __attribute__((naked)) unsigned strlen_vector16(const char *str)
 		"lw x5, 0(x31)\n\t"
 		"lw x6, 4(x31)\n\t"
 		"lw x7, 8(x31)\n\t"
-		"lw x10, 12(x31)\n\t"
+		"lw x28, 12(x31)\n\t"
 		"nop\n\t"
 		"beq x29, x0, inc\n\t"
 		"nop\n\t"
@@ -111,9 +111,9 @@ int main(void)
 	volatile uint64_t beg, end;
 	beg = cycles();
 #ifdef STRLEN_NAIVE
-	i = strlen(str);
-#elif STRLEN_ASM
 	i = my_strlen(str);
+#elif STRLEN_LIB
+	i = strlen(str);
 #elif STRLEN_VECTORIZED16
 	i = strlen_vector16(str);
 #elif STRLEN_VECTORIZED32

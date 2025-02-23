@@ -22,7 +22,7 @@ genstr () {
 	for i in {1..32}; do
 		STR="${STR}\\0"
 	done
-	echo "const char str[] = \"${STR}\";" > target_string.h
+	echo "volatile const char str[] = \"${STR}\";" > target_string.h
 }
 
 build () {
