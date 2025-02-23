@@ -20,7 +20,6 @@
 #ifdef STRLEN_VECTORIZED16
 __attribute__((naked)) unsigned strlen_vector16(const char *str)
 {
-	return 0;
 	asm volatile (
 		"vector_strlen:\n\t"
 		"addi x31, x10, 0\n\t"

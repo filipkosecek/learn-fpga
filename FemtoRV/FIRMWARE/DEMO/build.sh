@@ -27,7 +27,6 @@ genstr () {
 
 build () {
 	rm -f main.hex
-	echo $CHUNK
 	make RVUSERCFLAGS="-DSTRINGA${LENGTH} -DSTRLEN_VECTORIZED${CHUNK}" main.hex
 	replace_nops
 }
@@ -36,7 +35,6 @@ if [[ $# -eq 2 ]]; then
 	LENGTH=$1
 	REGCOUNT=$2
 	CHUNK=$(($REGCOUNT * 4))
-	echo $CHUNK
 fi
 echo "String's length set to ${LENGTH}."
 echo "Chunk size set to ${CHUNK}."

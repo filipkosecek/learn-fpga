@@ -117,7 +117,7 @@ module FemtoRV32(
     /***************************************************************************/
 
     /* SIMD_REG_COUNT can be from {2..8} */
-    parameter SIMD_REG_COUNT = 8;
+    parameter SIMD_REG_COUNT = 4;
 
     initial begin
         if (SIMD_REG_COUNT < 2 || SIMD_REG_COUNT > 8) begin
