@@ -42,11 +42,16 @@ build () {
 }
 
 ISRANDOM=
-if [[ $# -eq 3 ]]; then
+if [[ $# -lt 2 ]] || [[ $# -gt 3 ]]; then
+	echo "Wrong argument count." 1>&2
+	exit 1
+else
 	LENGTH=$1
 	REGCOUNT=$2
 	CHUNK=$(($REGCOUNT * 4))
-	ISRANDOM=$3
+	if [[ $# -eq 3 ]]; then
+		ISRANDOM=$3
+	fi
 fi
 echo "String's length set to ${LENGTH}."
 echo "Chunk size set to ${CHUNK}."
