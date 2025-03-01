@@ -90,8 +90,9 @@ module FemtoRV32(
    wire isLUI     =  (instr[6:2] == 5'b01101); // rd <- Uimm
    wire isAUIPC   =  (instr[6:2] == 5'b00101); // rd <- PC + Uimm
    wire isBranch  =  (instr[6:2] == 5'b11000); // if(rs1 OP rs2) PC<-PC+Bimm
-   wire isMultiCmp = (instr[6:2] == 5'b10000);
-   wire isBitmanip = (instr[6:2] == 5'b10100);
+   wire isMultiCmpImm = (instr[6:2] == 5'b10000);
+   wire isMultiCmpReg = (instr[6:2] == 5'b10100);
+   wire isBitmanip = (instr[6:2] == 5'b10101);
 
    wire isALU = isALUimm | isALUreg;
 
@@ -137,8 +138,9 @@ module FemtoRV32(
 	5'd5,
 	5'd10
     };
+    wire isMultiCmp = isMultiCmpReg | isMultiCmpImm;
     wire [7:0] multiCmpOp = funct3Is;
-    wire [7:0] byteValCmp = instr[31] ? Iimm[7:0] : rs1[7:0];
+    wire [7:0] byteValCmp = isMultiCmpImm ? Iimm[7:0] : rs1[7:0];
 
     wire [(SIMD_REG_COUNT * 4 - 1):0] multiCmp;
     assign multiCmp[3:0] = {
@@ -431,6 +433,10 @@ module FemtoRV32(
    wire needToWait = isLoad | isStore | isALU & funct3IsShift;
 `endif
 
+   function memRdataIsMultiCmp (input [6:2] mem_rdata);
+      memRdataIsMultiCmp = mem_rdata[6] & ~mem_rdata[5] & ~mem_rdata[3] & ~mem_rdata[2];
+   endfunction
+
    always @(posedge clk) begin
       if(!reset) begin
          state      <= WAIT_ALU_OR_MEM; // Just waiting for !mem_wbusy
@@ -443,11 +449,11 @@ module FemtoRV32(
 
         state[WAIT_INSTR_bit]: begin
            if(!mem_rbusy) begin // may be high when executing from SPI flash
-              rs2 <= registerFile[((mem_rdata[6:2] == 5'b10000) ? simdId[9:5] : mem_rdata[24:20])];
+              rs2 <= registerFile[(memRdataIsMultiCmp(mem_rdata[6:2]) ? simdId[9:5] : mem_rdata[24:20])];
               for (j = 3; j <= SIMD_REG_COUNT; j = j + 1) begin
                   rs[j] <= registerFile[simdId[(j - 1) * 5 +: 5]];
               end
-	      rs1 <= registerFile[(((mem_rdata[6:2] == 5'b10000) & mem_rdata[31]) ? simdId[4:0] : mem_rdata[19:15])];
+	      rs1 <= registerFile[((mem_rdata[6:2] == 5'b10000) ? simdId[4:0] : mem_rdata[19:15])];
               instr <= mem_rdata[31:2]; // Bits 0 and 1 are ignored (see
               state <= EXECUTE;         // also the declaration of instr).
            end
