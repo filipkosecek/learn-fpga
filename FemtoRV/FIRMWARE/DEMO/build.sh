@@ -9,9 +9,9 @@ replace_nops () {
 	local INSTR_PARAM=$(($REGCOUNT - 1))
 	local MULTICMP="8000${INSTR_PARAM}ec0"
 	local BITMANIP="000e8554"
-	sed "s/00000013/${MULTICMP}/;s/00000013/${BITMANIP}/g" main.hex > tmp.hex
-	cat tmp.hex > ../firmware.hex
-	rm tmp.hex
+	sed -i -z "s/00000013/${MULTICMP}/" main.hex
+	sed -i -z "s/00000013/${BITMANIP}/" main.hex
+	cat main.hex > ../firmware.hex
 }
 
 genstr () {
@@ -38,7 +38,7 @@ genstr_rand () {
 
 build_program () {
 	rm -f main.hex
-	make RVUSERCFLAGS="-DSTRINGA${LENGTH} -DSTRLEN_VECTORIZED${CHUNK}" main.hex
+	make RVUSERCFLAGS="-DSTRLEN_VECTORIZED${CHUNK}" main.hex
 	replace_nops
 }
 

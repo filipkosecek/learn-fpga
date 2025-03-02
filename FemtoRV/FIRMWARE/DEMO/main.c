@@ -17,8 +17,30 @@
  * x29 - ctz result storage
  * x30 - dummy register used for garbage values
  */
-#ifdef STRLEN_VECTORIZED16
-__attribute__((naked)) unsigned strlen_vector16(const char *str)
+#ifdef STRLEN_VECTORIZED8
+__attribute__((naked)) unsigned strlen_vector(const char *str)
+{
+	asm volatile (
+		"vector_strlen:\n\t"
+		"addi x31, x10, 0\n\t"
+		"lui x30, 0\n\t"
+		"jal x5, loop\n\t"
+		"inc:\n\t"
+		"addi x30, x30, 8\n\t"
+		"addi x31, x31, 8\n\t"
+		"loop:\n\t"
+		"lw x5, 0(x31)\n\t"
+		"lw x6, 4(x31)\n\t"
+		"nop\n\t"
+		"beq x29, x0, inc\n\t"
+		"nop\n\t"
+		"ret:\n\t"
+		"add x10, x10, x30\n\t"
+		"jalr x30, x1, 0\n\t"
+	);
+}
+#elif STRLEN_VECTORIZED16
+__attribute__((naked)) unsigned strlen_vector(const char *str)
 {
 	asm volatile (
 		"vector_strlen:\n\t"
@@ -41,23 +63,34 @@ __attribute__((naked)) unsigned strlen_vector16(const char *str)
 		"jalr x30, x1, 0\n\t"
 	);
 }
-#endif
-
-/*
- * first nop replacement: 01c3bec0
- * second nop replacement: 000e8550
- *
- * x10 - arg - string pointer/ return value
- * x31 - string pointer
- * x28 - explicit rs2 register
- * x5 - implicit rs3 register
- * x6 - implicit rs4 register
- * x7 - explicit rs1 register
- * x29 - ctz result storage
- * x30 - dummy register used for garbage values
- */
-#ifdef STRLEN_VECTORIZED32
-__attribute__((naked)) unsigned strlen_vector32(const char *str)
+#elif STRLEN_VECTORIZED24
+__attribute__((naked)) unsigned strlen_vector(const char *str)
+{
+	asm volatile (
+		"vector_strlen:\n\t"
+		"addi x31, x10, 0\n\t"
+		"lui x11, 0\n\t"
+		"jal x5, loop\n\t"
+		"inc:\n\t"
+		"addi x11, x11, 24\n\t"
+		"addi x31, x31, 24\n\t"
+		"loop:\n\t"
+		"lw x5, 0(x31)\n\t"
+		"lw x6, 4(x31)\n\t"
+		"lw x7, 8(x31)\n\t"
+		"lw x28, 12(x31)\n\t"
+		"lw x29, 16(x31)\n\t"
+		"lw x30, 20(x31)\n\t"
+		"nop\n\t"
+		"beq x29, x0, inc\n\t"
+		"nop\n\t"
+		"ret:\n\t"
+		"add x10, x10, x11\n\t"
+		"jalr x30, x1, 0\n\t"
+	);
+}
+#elif STRLEN_VECTORIZED32
+__attribute__((naked)) unsigned strlen_vector(const char *str)
 {
 	asm volatile (
 		"vector_strlen32:\n\t"
@@ -114,10 +147,8 @@ int main(void)
 	i = my_strlen(str);
 #elif STRLEN_LIB
 	i = strlen(str);
-#elif STRLEN_VECTORIZED16
-	i = strlen_vector16(str);
-#elif STRLEN_VECTORIZED32
-	i = strlen_vector32(str);
+#else
+	i = strlen_vector(str);
 #endif
 	end = cycles();
 	print_cycles(end - beg);
