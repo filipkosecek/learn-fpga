@@ -18,12 +18,12 @@ genstr () {
 	local n=$1
 	STR=""
 	for ((i = 0; i < n; ++i)); do
-		STR="${STR}a"
+		STR="${STR} 0x61,"
 	done
-	for i in {1..32}; do
-		STR="${STR}\\0"
+	for i in {2..32}; do
+		STR="${STR} 0x00,"
 	done
-	echo "volatile const char str[] = \"${STR}\";" > target_string.h
+	echo "volatile const char str[] = {${STR}};" > target_string.h
 }
 
 genstr_rand () {
@@ -46,17 +46,38 @@ setup_CPU () {
 	sed -i "s/\\(parameter SIMD_REG_COUNT = \\)\\([2-8]\\);/\\1${MAXREGCOUNT};/g" ../../RTL/PROCESSOR/femtorv32_quark_simd.v
 }
 
-LENGTHS=(0 31 67 131 251 1022 2051 4056)
-REGCOUNTS=(2 4 6 8)
-ISRANDOM=
-echo "String's length set to ${LENGTH}."
-echo "Chunk size set to ${CHUNK}."
-setup_CPU
-for LENGTH in ${LENGTHS[@]}; do
-	genstr $LENGTH
-	for REGCOUNT in ${REGCOUNTS[@]}; do
-		CHUNK=$(($REGCOUNT * 4))
-		build_program
-		make -sC ../../ BENCH.icarus
+benchmark () {
+	LENGTHS=(0 31 67 131 251 1022 2051 4056)
+	REGCOUNTS=(2 4 6 8)
+	ISRANDOM=
+	echo "String's length set to ${LENGTH}."
+	echo "Chunk size set to ${CHUNK}."
+	setup_CPU
+	for LENGTH in ${LENGTHS[@]}; do
+		genstr $LENGTH
+		for REGCOUNT in ${REGCOUNTS[@]}; do
+			CHUNK=$(($REGCOUNT * 4))
+			build_program
+			make -sC ../../ BENCH.icarus
+		done
 	done
-done
+}
+
+basic_test () {
+	LENGTH=$1
+	REGCOUNT=$2
+	CHUNK=$(($REGCOUNT * 4))
+	setup_CPU
+	genstr $LENGTH
+	build_program
+	make -sC ../../ BENCH.icarus
+}
+
+if [[ $# -eq 2 ]]; then
+	basic_test $1 $2
+elif [[ $# -eq 0 ]]; then
+	benchmark
+else
+	echo "Wrong number of arguments." 1>&2
+	exit 1
+fi
