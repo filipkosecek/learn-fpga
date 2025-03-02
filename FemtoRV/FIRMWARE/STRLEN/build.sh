@@ -46,28 +46,17 @@ setup_CPU () {
 	sed -i "s/\\(parameter SIMD_REG_COUNT = \\)\\([2-8]\\);/\\1${MAXREGCOUNT};/g" ../../RTL/PROCESSOR/femtorv32_quark_simd.v
 }
 
+LENGTHS=(0 31 67 131 251 1022 2051 4056)
+REGCOUNTS=(2 4 6 8)
 ISRANDOM=
-if [[ $# -lt 3 ]] || [[ $# -gt 4 ]]; then
-	echo "Wrong argument count." 1>&2
-	exit 1
-else
-	LENGTH=$1
-	MAXREGCOUNT=$2
-	REGCOUNT=$3
-	CHUNK=$(($REGCOUNT * 4))
-	if [[ $# -eq 4 ]]; then
-		ISRANDOM=$4
-	fi
-fi
 echo "String's length set to ${LENGTH}."
 echo "Chunk size set to ${CHUNK}."
-
-if [[ -n $ISRANDOM ]]; then
-	genstr_rand $LENGTH
-else
-	genstr $LENGTH
-fi
-
 setup_CPU
-build_program
-make -C ../../ BENCH.icarus
+for LENGTH in ${LENGTHS[@]}; do
+	genstr $LENGTH
+	for REGCOUNT in ${REGCOUNTS[@]}; do
+		CHUNK=$(($REGCOUNT * 4))
+		build_program
+		make -sC ../../ BENCH.icarus
+	done
+done
