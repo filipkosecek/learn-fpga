@@ -44,10 +44,10 @@ replace_nops () {
 	cat main.hex > ../firmware.hex
 }
 
-build_vectorized_program () {
+build_program () {
+	local RVUSERCFLAGS=$1
 	rm -f main.hex
-	make RVUSERCFLAGS="-DSTRLEN_VECTORIZED${CHUNK}" main.hex > /dev/null 2>/dev/null
-	replace_nops
+	make RVUSERCFLAGS=$RVUSERCFLAGS main.hex > /dev/null 2>/dev/null
 }
 
 benchmark_vectorized () {
@@ -61,8 +61,9 @@ benchmark_vectorized () {
 		genstr $LENGTH
 		for REGCOUNT in ${REGCOUNTS[@]}; do
 			CHUNK=$(($REGCOUNT * 4))
-			build_vectorized_program
-			make -sC ../../ BENCH.icarus | grep "Clock cycle count:\|String's length:"
+			build_program "-DSTRLEN_VECTORIZED${CHUNK}"
+			replace_nops
+			make -sC ../../ BENCH.icarus 2>&1 | grep "Clock cycle count:\|String's length:"
 		done
 	done
 }
@@ -73,8 +74,9 @@ benchmark_basic () {
 	CHUNK=$(($REGCOUNT * 4))
 	setup_CPU
 	genstr $LENGTH
-	build_vectorized_program
-	make -sC ../../ BENCH.icarus
+	build_program "-DSTRLEN_VECTORIZED${CHUNK}"
+	replace_nops
+	make -sC ../../ BENCH.icarus 2>&1 | grep "Clock cycle count:\|String's length:"
 }
 
 benchmark_std () {
@@ -83,9 +85,8 @@ benchmark_std () {
 	echo "/**********************************/"
 	for LENGTH in ${LENGTHS[@]}; do
 		genstr $LENGTH
-		rm main.hex
-		make RVUSERCFLAGS="-DSTRLEN_NAIVE" main.hex > /dev/null
-		make -sC ../../ BENCH.icarus | grep "Clock cycle count:\|String's length:"
+		build_program "-DSTRLEN_NAIVE"
+		make -sC ../../ BENCH.icarus 2>&1 | grep "Clock cycle count:\|String's length:"
 	done
 
 	echo "/************************************/"
@@ -93,9 +94,8 @@ benchmark_std () {
 	echo "/************************************/"
 	for LENGTH in ${LENGTHS[@]}; do
 		genstr $LENGTH
-		rm main.hex
-		make -s RVUSERCFLAGS="-DSTRLEN_LIB" main.hex
-		make -sC ../../ BENCH.icarus
+		build_program '-DSTRLEN_LIB'
+		make -sC ../../ BENCH.icarus 2>&1 | grep "Clock cycle count:\|String's length:"
 	done
 }
 
