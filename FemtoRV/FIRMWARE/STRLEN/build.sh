@@ -1,19 +1,14 @@
 #!/bin/bash
 
+LENGTHS=(0 31 67 131 251 1022 2051 4056)
+REGCOUNTS=(2 4 6 8)
 LENGTH=1025
 MAXREGCOUNT=8
 REGCOUNT=8
 CHUNK=$(($REGCOUNT * 4))
+ISRANDOM=
 
-replace_nops () {
-	local INSTR_PARAM=$(($REGCOUNT - 1))
-	local MULTICMP="8000${INSTR_PARAM}ec0"
-	local BITMANIP="000e8554"
-	sed -i -z "s/00000013/${MULTICMP}/" main.hex
-	sed -i -z "s/00000013/${BITMANIP}/" main.hex
-	cat main.hex > ../firmware.hex
-}
-
+# String generation deterministic/random
 genstr () {
 	local n=$1
 	STR=""
@@ -36,20 +31,29 @@ genstr_rand () {
 	echo "${C_HEADER}};" >> target_string.h
 }
 
-build_program () {
-	rm -f main.hex
-	make RVUSERCFLAGS="-DSTRLEN_VECTORIZED${CHUNK}" main.hex
-	replace_nops
-}
-
 setup_CPU () {
 	sed -i "s/\\(parameter SIMD_REG_COUNT = \\)\\([2-8]\\);/\\1${MAXREGCOUNT};/g" ../../RTL/PROCESSOR/femtorv32_quark_simd.v
 }
 
-benchmark () {
-	LENGTHS=(0 31 67 131 251 1022 2051 4056)
-	REGCOUNTS=(2 4 6 8)
-	ISRANDOM=
+replace_nops () {
+	local INSTR_PARAM=$(($REGCOUNT - 1))
+	local MULTICMP="8000${INSTR_PARAM}ec0"
+	local BITMANIP="000e8554"
+	sed -i -z "s/00000013/${MULTICMP}/" main.hex
+	sed -i -z "s/00000013/${BITMANIP}/" main.hex
+	cat main.hex > ../firmware.hex
+}
+
+build_vectorized_program () {
+	rm -f main.hex
+	make RVUSERCFLAGS="-DSTRLEN_VECTORIZED${CHUNK}" main.hex > /dev/null 2>/dev/null
+	replace_nops
+}
+
+benchmark_vectorized () {
+	echo "/***************************************/"
+	echo "Testing vectorized strlen implementation."
+	echo "/***************************************/"
 	echo "String's length set to ${LENGTH}."
 	echo "Chunk size set to ${CHUNK}."
 	setup_CPU
@@ -57,26 +61,49 @@ benchmark () {
 		genstr $LENGTH
 		for REGCOUNT in ${REGCOUNTS[@]}; do
 			CHUNK=$(($REGCOUNT * 4))
-			build_program
-			make -sC ../../ BENCH.icarus
+			build_vectorized_program
+			make -sC ../../ BENCH.icarus | grep "Clock cycle count:\|String's length:"
 		done
 	done
 }
 
-basic_test () {
+benchmark_basic () {
 	LENGTH=$1
 	REGCOUNT=$2
 	CHUNK=$(($REGCOUNT * 4))
 	setup_CPU
 	genstr $LENGTH
-	build_program
+	build_vectorized_program
 	make -sC ../../ BENCH.icarus
+}
+
+benchmark_std () {
+	echo "/**********************************/"
+	echo "Testing naive strlen implementation."
+	echo "/**********************************/"
+	for LENGTH in ${LENGTHS[@]}; do
+		genstr $LENGTH
+		rm main.hex
+		make RVUSERCFLAGS="-DSTRLEN_NAIVE" main.hex > /dev/null
+		make -sC ../../ BENCH.icarus | grep "Clock cycle count:\|String's length:"
+	done
+
+	echo "/************************************/"
+	echo "Testing library strlen implementation."
+	echo "/************************************/"
+	for LENGTH in ${LENGTHS[@]}; do
+		genstr $LENGTH
+		rm main.hex
+		make -s RVUSERCFLAGS="-DSTRLEN_LIB" main.hex
+		make -sC ../../ BENCH.icarus
+	done
 }
 
 if [[ $# -eq 2 ]]; then
 	basic_test $1 $2
 elif [[ $# -eq 0 ]]; then
-	benchmark
+	benchmark_std
+	benchmark_vectorized
 else
 	echo "Wrong number of arguments." 1>&2
 	exit 1
