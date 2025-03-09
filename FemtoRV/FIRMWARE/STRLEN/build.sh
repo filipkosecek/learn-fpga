@@ -50,24 +50,6 @@ build_program () {
 	make RVUSERCFLAGS=$RVUSERCFLAGS main.hex > /dev/null 2>/dev/null
 }
 
-benchmark_vectorized () {
-	echo "/***************************************/"
-	echo "Testing vectorized strlen implementation."
-	echo "/***************************************/"
-	echo "String's length set to ${LENGTH}."
-	echo "Chunk size set to ${CHUNK}."
-	setup_CPU
-	for LENGTH in ${LENGTHS[@]}; do
-		genstr $LENGTH
-		for REGCOUNT in ${REGCOUNTS[@]}; do
-			CHUNK=$(($REGCOUNT * 4))
-			build_program "-DSTRLEN_VECTORIZED${CHUNK}"
-			replace_nops
-			make -sC ../../ BENCH.icarus 2>&1 | grep "Clock cycle count:\|String's length:"
-		done
-	done
-}
-
 benchmark_basic () {
 	LENGTH=$1
 	REGCOUNT=$2
@@ -79,31 +61,45 @@ benchmark_basic () {
 	make -sC ../../ BENCH.icarus 2>&1 | grep "Clock cycle count:\|String's length:"
 }
 
-benchmark_std () {
-	echo "/**********************************/"
-	echo "Testing naive strlen implementation."
-	echo "/**********************************/"
+benchmark () {
 	for LENGTH in ${LENGTHS[@]}; do
-		genstr $LENGTH
+		if [[ -n $ISRANDOM ]]; then
+			genstr_rand $LENGTH
+		else
+			genstr $LENGTH
+		fi
+
+		echo "STRLEN NAIVE"
+		echo "STRING SIZE: ${LENGTH}"
 		build_program "-DSTRLEN_NAIVE"
 		make -sC ../../ BENCH.icarus 2>&1 | grep "Clock cycle count:\|String's length:"
-	done
+		echo
 
-	echo "/************************************/"
-	echo "Testing library strlen implementation."
-	echo "/************************************/"
-	for LENGTH in ${LENGTHS[@]}; do
-		genstr $LENGTH
-		build_program '-DSTRLEN_LIB'
+		echo "STRLEN LIBRARY"
+		echo "STRING SIZE: ${LENGTH}"
+		build_program "-DSTRLEN_LIB"
 		make -sC ../../ BENCH.icarus 2>&1 | grep "Clock cycle count:\|String's length:"
+		echo
+
+		for REGCOUNT in ${REGCOUNTS[@]}; do
+			CHUNK=$(($REGCOUNT * 4))
+			echo "STRLEN VECTORIZED${CHUNK}"
+			echo "STRING SIZE: ${LENGTH}"
+			build_program "-DSTRLEN_VECTORIZED${CHUNK}"
+			replace_nops
+			make -sC ../../ BENCH.icarus 2>&1 | grep "Clock cycle count:\|String's length:"
+			echo
+		done
 	done
 }
 
 if [[ $# -eq 2 ]]; then
 	basic_test $1 $2
-elif [[ $# -eq 0 ]]; then
-	benchmark_std
-	benchmark_vectorized
+elif [[ $# -eq 0 ]] || [[ $# -eq 1 ]]; then
+	if [[ $# -eq 1 ]]; then
+		ISRANDOM=$1
+	fi
+	benchmark
 else
 	echo "Wrong number of arguments." 1>&2
 	exit 1
