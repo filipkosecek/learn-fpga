@@ -2,7 +2,7 @@
 #   testbench pseudo-board
 ################################################################################
 
-DURATION=100000
+DURATION=600000
 VCD_FILE=\"femtosoc_bench.vcd\"
 
 BENCH: BENCH.verilator

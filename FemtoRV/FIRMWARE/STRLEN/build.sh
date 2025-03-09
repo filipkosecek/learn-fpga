@@ -1,12 +1,12 @@
 #!/bin/bash
 
-LENGTHS=(0 31 67 131 251 1022 2051 4056)
+LENGTHS=(0 31 67 131 251 1022 2051 4056 8188 19871)
 REGCOUNTS=(2 4 6 8)
 LENGTH=1025
 MAXREGCOUNT=8
 REGCOUNT=8
 CHUNK=$(($REGCOUNT * 4))
-MAXLEN=8092
+MAXLEN=20000
 
 # String generation deterministic/random
 genstr () {
@@ -37,7 +37,7 @@ replace_nops () {
 build_program () {
 	local RVUSERCFLAGS=$1
 	rm -f main.hex
-	make RVUSERCFLAGS=$RVUSERCFLAGS main.hex > /dev/null 2>/dev/null
+	make RVUSERCFLAGS=$RVUSERCFLAGS main.hex 1>/dev/null 2>/dev/null
 }
 
 benchmark_basic () {
