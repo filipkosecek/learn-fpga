@@ -6,7 +6,7 @@ LENGTH=1025
 MAXREGCOUNT=8
 REGCOUNT=8
 CHUNK=$(($REGCOUNT * 4))
-ISRANDOM=
+MAXLEN=8092
 
 # String generation deterministic/random
 genstr () {
@@ -19,16 +19,6 @@ genstr () {
 		STR="${STR} 0x00,"
 	done
 	echo "volatile const char str[] = {${STR}};" > target_string.h
-}
-
-genstr_rand () {
-	echo -n "volatile const char str[] = {" > target_string.h
-	head -c $1 /dev/urandom | xxd -i >> target_string.h
-	# append a null byte in case there was no in the stream
-	for i in {1..32}; do
-		C_HEADER="${C_HEADER}, 0x00"
-	done
-	echo "${C_HEADER}};" >> target_string.h
 }
 
 setup_CPU () {
@@ -63,11 +53,7 @@ benchmark_basic () {
 
 benchmark () {
 	for LENGTH in ${LENGTHS[@]}; do
-		if [[ -n $ISRANDOM ]]; then
-			genstr_rand $LENGTH
-		else
-			genstr $LENGTH
-		fi
+		genstr $LENGTH
 
 		echo "STRLEN NAIVE"
 		echo "STRING SIZE: ${LENGTH}"
@@ -97,7 +83,13 @@ if [[ $# -eq 2 ]]; then
 	basic_test $1 $2
 elif [[ $# -eq 0 ]] || [[ $# -eq 1 ]]; then
 	if [[ $# -eq 1 ]]; then
-		ISRANDOM=$1
+		for (( j = 0; j < ${#LENGTHS[@]}; ++j )); do
+			rand=$RANDOM
+			while [[ $rand -lt 0 ]]; do
+				rand=$RANDOM
+			done
+			LENGTHS[$j]=$((rand % MAXLEN))
+		done
 	fi
 	benchmark
 else
