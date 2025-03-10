@@ -81,16 +81,20 @@ benchmark () {
 
 if [[ $# -eq 2 ]]; then
 	basic_test $1 $2
-elif [[ $# -eq 0 ]] || [[ $# -eq 1 ]]; then
-	if [[ $# -eq 1 ]]; then
-		for (( j = 0; j < ${#LENGTHS[@]}; ++j )); do
-			rand=$RANDOM
-			while [[ $rand -lt 0 ]]; do
-				rand=$RANDOM
-			done
-			LENGTHS[$j]=$((rand % MAXLEN))
-		done
+elif [[ $# -eq 1 ]]; then
+	if [[ $1 != "-r" ]]; then
+		echo "The only option is '-r'." 1>&2
+		exit 2
 	fi
+	for (( j = 0; j < ${#LENGTHS[@]}; ++j )); do
+		rand=$RANDOM
+		while [[ $rand -lt 0 ]]; do
+			rand=$RANDOM
+		done
+		LENGTHS[$j]=$((rand % MAXLEN))
+	done
+	benchmark
+elif [[ $# -eq 0 ]]; then
 	benchmark
 else
 	echo "Wrong number of arguments." 1>&2
