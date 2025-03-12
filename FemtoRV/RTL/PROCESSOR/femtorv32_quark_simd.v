@@ -173,7 +173,7 @@ module FemtoRV32(
     wire [31:0] multiCmpRes;
     for (i = 0; i <= 7; i = i + 1) begin
         if (i < SIMD_REG_COUNT)
-            assign multiCmpRes[i * 4 +: 4] = prefix_bitmask[i] ? multiCmp[i * 4 +: 4] : 4'b0000;
+            assign multiCmpRes[i * 4 +: 4] = multiCmp[i * 4 +: 4] & {4{prefix_bitmask[i]}};
         else
             assign multiCmpRes[i * 4 +: 4] = 4'b0000;
     end
