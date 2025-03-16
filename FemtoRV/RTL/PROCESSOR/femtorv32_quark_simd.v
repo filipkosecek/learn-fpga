@@ -194,16 +194,17 @@ module FemtoRV32(
 	};
     end
 
-    assign bitmanipRes =
-                isNibNonZero[0] ? {1'b0, 3'b000, nibbleCTZ[0]} :
-                isNibNonZero[1] ? {1'b0, 3'b001, nibbleCTZ[1]} :
-                isNibNonZero[2] ? {1'b0, 3'b010, nibbleCTZ[2]} :
-                isNibNonZero[3] ? {1'b0, 3'b011, nibbleCTZ[3]} :
-		isNibNonZero[4] ? {1'b0, 3'b100, nibbleCTZ[4]} :
-		isNibNonZero[5] ? {1'b0, 3'b101, nibbleCTZ[5]} :
-		isNibNonZero[6] ? {1'b0, 3'b110, nibbleCTZ[6]} :
-		isNibNonZero[7] ? {1'b0, 3'b111, nibbleCTZ[7]} :
-                6'b100000                                           ; // error bit: all data bits are 0
+    assign bitmanipRes[4:0] =
+                isNibNonZero[0] ? {3'b000, nibbleCTZ[0]} :
+                isNibNonZero[1] ? {3'b001, nibbleCTZ[1]} :
+                isNibNonZero[2] ? {3'b010, nibbleCTZ[2]} :
+                isNibNonZero[3] ? {3'b011, nibbleCTZ[3]} :
+		isNibNonZero[4] ? {3'b100, nibbleCTZ[4]} :
+		isNibNonZero[5] ? {3'b101, nibbleCTZ[5]} :
+		isNibNonZero[6] ? {3'b110, nibbleCTZ[6]} :
+		{3'b111, nibbleCTZ[7]}                   ;
+
+    assign bitmanipRes[5] = (bitmanipTarget == 0);
 
    /***************************************************************************/
    // The ALU. Does operations and tests combinatorially, except shifts.
