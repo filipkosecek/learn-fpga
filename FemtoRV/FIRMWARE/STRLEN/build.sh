@@ -52,6 +52,7 @@ benchmark_basic () {
 }
 
 benchmark () {
+	make -C ../../ BENCH.icarus_firmware_config 1>/dev/null 2>/dev/null
 	for LENGTH in ${LENGTHS[@]}; do
 		genstr $LENGTH
 
