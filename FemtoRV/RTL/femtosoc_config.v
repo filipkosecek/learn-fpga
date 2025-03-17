@@ -32,8 +32,8 @@
 `include "CONFIGS/cmod_a7_config.v"
 `endif
 
-`ifdef ICE40HX8K_EVB
-`include "CONFIGS/ice40hx8k_evb_config.v"
+`ifdef ICE40HX8K_BREAKOUT
+`include "CONFIGS/ice40hx8k_breakout_config.v"
 `endif
 
 `ifdef BENCH_VERILATOR
@@ -111,7 +111,7 @@
  `define ECP5 
 `endif
 
-`ifdef ICE40HX8K_EVB
+`ifdef ICE40HX8K_BREAKOUT
  `define ICE40
 `endif
 

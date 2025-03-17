@@ -51,8 +51,8 @@
  * The fast read mode is compatible with the current implementation.
  * Flash datasheet: https://www.alldatasheet.com/datasheet-pdf/pdf/443790/WINBOND/W25Q16BVSSIG.html
  */
-`ifdef ICE40HX8K_EVB
- `define SPI_FLASH_FAST_READ
+`ifdef ICE40HX8K_BREAKOUT
+ `define SPI_FLASH_READ
  `define SPI_FLASH_CONFIGURED
 `endif
 

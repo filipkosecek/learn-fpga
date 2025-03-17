@@ -1,0 +1,26 @@
+YOSYS_ICE40HX8K_BREAKOUT_OPT=-DICE40HX8K_BREAKOUT -q -p "synth_ice40 -relut -top $(PROJECTNAME) -json $(PROJECTNAME).json"
+NEXTPNR_ICE40HX8K_BREAKOUT_OPT=--json $(PROJECTNAME).json --pcf BOARDS/ice40hx8k_breakout.pcf --asc $(PROJECTNAME).asc \
+			  --freq 20 --hx8k --package ct256 --opt-timing
+
+ICE40HX8K_BREAKOUT: ICE40HX8K_BREAKOUT.firmware_config ICE40HX8K_BREAKOUT.synth ICE40HX8K_BREAKOUT.prog
+
+ICE40HX8K_BREAKOUT.synth:
+	yosys $(YOSYS_ICE40HX8K_BREAKOUT_OPT) $(VERILOGS)
+	nextpnr-ice40 $(NEXTPNR_ICE40HX8K_BREAKOUT_OPT)
+	icetime -p BOARDS/ice40hx8k_breakout.pcf -P ct256 -r $(PROJECTNAME).timings -d hx8k -t $(PROJECTNAME).asc
+	icepack -s $(PROJECTNAME).asc $(PROJECTNAME).bin
+
+ICE40HX8K_BREAKOUT.show:
+	yosys $(YOSYS_ICE40HX8K_BREAKOUT_OPT) $(VERILOGS)
+	nextpnr-ice40 $(NEXTPNR_ICE40HX8K_BREAKOUT_OPT) --gui
+
+ICE40HX8K_BREAKOUT.prog:
+	iceprog $(PROJECTNAME).bin
+
+ICE40HX8K_BREAKOUT.firmware_config:
+	BOARD=ice40hx8k_breakout TOOLS/make_config.sh -DICE40HX8K_BREAKOUT
+	(cd FIRMWARE; make libs)
+
+ICE40HX8K_BREAKOUT.lint:
+	verilator -DICE40HX8K_BREAKOUT -DBENCH --lint-only --top-module $(PROJECTNAME) \
+		-IRTL -IRTL/PROCESSOR -IRTL/DEVICES -IRTL/PLL $(VERILOGS)

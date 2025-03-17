@@ -1,0 +1,17 @@
+set_io pclk J3
+
+set_io D1 B5
+set_io D2 B4
+set_io D3 A2
+set_io D4 A1
+set_io D5 C5
+
+set_io TXD B12
+set_io RXD B10
+
+set_io spi_cs_n R12
+set_io spi_miso P12
+set_io spi_mosi P11
+set_io spi_clk  R11
+
+set_io RESET B1
