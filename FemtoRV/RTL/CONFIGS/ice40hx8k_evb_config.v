@@ -10,7 +10,7 @@
 
 /************************* Processor configuration *******************************************************************/
 
-`define NRV_FEMTORV32_QUARK
+`define NRV_FEMTORV32_QUARK_SIMD
 `define NRV_FREQ 40
 `define NRV_RESET_ADDR 32'h00830000 // Jump execution to SPI Flash (800000h, +192k(30000h) for FPGA bitstream)
                                     // Maximum bitstream size is 136448 bytes and the firmware address is
