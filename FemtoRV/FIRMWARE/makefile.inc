@@ -135,16 +135,16 @@ FEMTORV32_LIBS_SMALL=-L$(RVTOOLCHAIN_LIB_DIR)\
 
 # Generate a "bare metal elf", to be loaded from address 0 (rule for conversion to .hex file in makefile.inc)
 # The generated ".hex" file is directly included in the Verilog files, for memory initialization
-%.baremetal.elf: %.o $(RV_BINARIES)
-	$(RVLD) $(RVLDFLAGS) -T$(FIRMWARE_DIR)/CRT/baremetal.ld $< -o $@ $(FEMTORV32_LIBS) $(RVGCC_LIB)
+%.baremetal.elf: %.o $(RV_BINARIES) $(RV_USERLIBS)
+	$(RVLD) $(RVLDFLAGS) -T$(FIRMWARE_DIR)/CRT/baremetal.ld $(RV_USERLIBS) $< -o $@ $(FEMTORV32_LIBS) $(RVGCC_LIB)
 
 # Generate a "femtOS elf executable", to be loaded from address 0x10000 (rule for conversion to .bin file in makefile.inc)
 %.elf: %.o $(RV_BINARIES)
 	$(RVGPP) $(RVCFLAGS) $(RVCPPFLAGS) -nostdlib $< -o $@ -Wl,-gc-sections $(FEMTORV32_LIBS) -lsupc++ $(RVGCC_LIB) $(FIRMWARE_DIR)/CRT/crt0_baremetal.o
 
 # Generate a "spi elf", to be loaded from address 0x810000 
-%.spiflash.elf: %.o $(RV_BINARIES) 
-	$(RVLD) $(RVLDFLAGS) -T$(FIRMWARE_DIR)/CRT/spiflash_$(BOARD).ld $< -o $@ $(FEMTORV32_LIBS) -lsupc++ $(RVGCC_LIB)
+%.spiflash.elf: %.o $(RV_BINARIES) $(RV_USERLIBS)
+	$(RVLD) $(RVLDFLAGS) -T$(FIRMWARE_DIR)/CRT/spiflash_$(BOARD).ld $(RV_USERLIBS) $< -o $@ $(FEMTORV32_LIBS) -lsupc++ $(RVGCC_LIB)
 
 # Converts the ELF executable to flat binary form, ready to be sent to SPI flash.
 %.spiflash.bin: %.spiflash.elf
