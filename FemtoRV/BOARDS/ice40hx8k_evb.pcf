@@ -6,8 +6,8 @@ set_io D3 B2
 set_io D4 F5
 set_io D5 R16
 
-set_io TXD T16
-set_io RXD L11
+set_io TXD E2
+set_io RXD G3
 
 set_io spi_cs_n R12
 set_io spi_miso P11
