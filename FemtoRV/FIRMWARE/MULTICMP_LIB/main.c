@@ -5,16 +5,16 @@
 #include "multicmp.h"
 #include "ctz.h"
 
-volatile const char str[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\0\0\0\0\0\0\0\0";
+volatile const char str[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaa\0\0\0\0\0\0\0\0";
 
 int main(void)
 {
 	uint32_t x;
 	size_t len = 0;
 	while (1) {
-		x = multicmp8(str + len, 0);
+		x = multicmp28(str + len, 0);
 		if (x == 0)
-			len += 8;
+			len += 28;
 		else
 			break;
 	}
