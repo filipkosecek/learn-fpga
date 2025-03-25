@@ -1,5 +1,14 @@
 #include <stdint.h>
 
+uint32_t multicmp4_imm0(const void *mem);
+uint32_t multicmp8_imm0(const void *mem);
+uint32_t multicmp12_imm0(const void *mem);
+uint32_t multicmp16_imm0(const void *mem);
+uint32_t multicmp20_imm0(const void *mem);
+uint32_t multicmp24_imm0(const void *mem);
+uint32_t multicmp28_imm0(const void *mem);
+uint32_t multicmp32_imm0(const void *mem);
+
 uint32_t multicmp4(const void *mem, uint8_t byte_val);
 uint32_t multicmp8(const void *mem, uint8_t byte_val);
 uint32_t multicmp12(const void *mem, uint8_t byte_val);
