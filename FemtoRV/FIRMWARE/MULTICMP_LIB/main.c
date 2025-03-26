@@ -8,6 +8,8 @@
 #define mcmp(multicmp_func, block_size) \
 	size_t len = 0; \
 	uint32_t x; \
+	uint64_t beg, end; \
+	beg = cycles(); \
 	while (1) { \
 		x = (multicmp_func)(str + len); \
 		if (x == 0) \
@@ -16,49 +18,64 @@
 			break; \
 	} \
 	len += ctz(x); \
-	print_dec((int) len); \
-	putchar('\n');
+	end = cycles(); \
+	print_result(len, end - beg);
 
 
 volatile const char str[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
-
-void test_mcmp4(void)
+static print_result(int length, int cycle_count)
 {
+	printf("String length: %d\r\n", length);
+	printf("Cycle count: %d\r\n", cycle_count);
+	putchar('\r');
+	putchar('\n');
+}
+
+static void test_mcmp4(void)
+{
+	puts("MULTICMP4");
 	mcmp(multicmp4_imm0, 4)
 }
 
-void test_mcmp8(void)
+static void test_mcmp8(void)
 {
+	puts("MULTICMP8");
 	mcmp(multicmp8_imm0, 8)
 }
 
-void test_mcmp12(void)
+static void test_mcmp12(void)
 {
+	puts("MULTICMP12");
 	mcmp(multicmp12_imm0, 12)
 }
 
-void test_mcmp16(void)
+static void test_mcmp16(void)
 {
+	puts("MULTICMP16");
 	mcmp(multicmp16_imm0, 16)
 }
 
-void test_mcmp20(void)
+static void test_mcmp20(void)
 {
+	puts("MULTICMP20");
 	mcmp(multicmp20_imm0, 20)
 }
 
-void test_mcmp24(void)
+static void test_mcmp24(void)
 {
+	puts("MULTICMP24");
 	mcmp(multicmp24_imm0, 24)
 }
 
-void test_mcmp28(void)
+static void test_mcmp28(void)
 {
+	puts("MULTICMP28");
 	mcmp(multicmp28_imm0, 28)
 }
 
-void test_mcmp32(void)
+static void test_mcmp32(void)
 {
+	puts("MULTICMP32");
 	mcmp(multicmp32_imm0, 32)
 }
 
