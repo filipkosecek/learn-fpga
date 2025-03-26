@@ -6,6 +6,9 @@ ASFLAGS=-march=rv32i -mabi=ilp32
 
 multicmp.elf: multicmp.S
 	$(RVAS) $(ASFLAGS) $< -o $@
+	xxd multicmp.elf multicmp.hex
+	python3 replace_nops.py < multicmp.hex | xxd -r > multicmp.elf
+	rm -f multicmp.hex
 
 ctz.elf: ctz.S
 	$(RVAS) $(ASFLAGS) $< -o $@
