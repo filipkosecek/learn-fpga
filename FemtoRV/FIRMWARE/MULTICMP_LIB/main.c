@@ -78,8 +78,20 @@ static void test_mcmp32(void)
 	mcmp(multicmp32_imm0, 32)
 }
 
+static void test_strlen(void)
+{
+	uint64_t beg, end;
+	size_t len;
+	beg = cycles();
+	len = strlen(str);
+	end = cycles();
+	puts("STRLEN");
+	print_result(len, end - beg);
+}
+
 int main(void)
 {
+	test_strlen();
 	test_mcmp4();
 	test_mcmp8();
 	test_mcmp12();
