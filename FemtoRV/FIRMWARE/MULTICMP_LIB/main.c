@@ -4,6 +4,7 @@
 
 #include "multicmp.h"
 #include "ctz.h"
+#include "target.h"
 
 #define mcmp(multicmp_func, block_size) \
 	size_t len = 0; \
@@ -21,8 +22,6 @@
 	end = cycles(); \
 	print_result(len, end - beg);
 
-
-volatile const char str[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 static print_result(int length, int cycle_count)
 {
 	printf("String length: %d\r\n", length);
