@@ -6,6 +6,9 @@
 #include "ctz.h"
 #include "target.h"
 
+#define LED 0x400004
+volatile static uint32_t *led = LED;
+
 #define mcmp(multicmp_func, block_size) \
 	size_t len = 0; \
 	uint32_t x; \
@@ -24,9 +27,8 @@
 
 static print_result(int length, int cycle_count)
 {
-	printf("String length: %d\r\n", length);
-	printf("Cycle count: %d\r\n", cycle_count);
-	putchar('\r');
+	printf("String length: %d\n", length);
+	printf("Cycle count: %d\n", cycle_count);
 	putchar('\n');
 }
 
@@ -89,17 +91,48 @@ static void test_strlen(void)
 	print_result(len, end - beg);
 }
 
+#ifdef BENCH
+#define DELAY_AND_UNBLINK
+#define DELAY_AND_BLINK
+#else
+#define DELAY_AND_UNBLINK \
+	*led = 0; \
+	delay(200);
+
+#define DELAY_AND_BLINK \
+	*led = 1; \
+	delay(200);
+#endif
+
 int main(void)
 {
+	DELAY_AND_BLINK
 	test_strlen();
+	DELAY_AND_UNBLINK
+	DELAY_AND_BLINK
 	test_mcmp4();
+	DELAY_AND_UNBLINK
+	DELAY_AND_BLINK
 	test_mcmp8();
+	DELAY_AND_UNBLINK
+	DELAY_AND_BLINK
 	test_mcmp12();
+	DELAY_AND_UNBLINK
+	DELAY_AND_BLINK
 	test_mcmp16();
+	DELAY_AND_UNBLINK
+	DELAY_AND_BLINK
 	test_mcmp20();
+	DELAY_AND_UNBLINK
+	DELAY_AND_BLINK
 	test_mcmp24();
+	DELAY_AND_UNBLINK
+	DELAY_AND_BLINK
 	test_mcmp28();
+	DELAY_AND_UNBLINK
+	DELAY_AND_BLINK
 	test_mcmp32();
+	DELAY_AND_UNBLINK
 	while (1);
 	return 0;
 }
