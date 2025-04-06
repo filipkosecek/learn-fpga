@@ -33,6 +33,7 @@ if [[ $# -eq 2 ]]; then
 	n=$2
 fi
 
+make -C ../../ BENCH.icarus_firmware_config
 for ((j = 0; j < n; ++j)); do
 	if [[ -z $IS_RANDOM ]]; then
 		LENGTH=${LENGTHS[$j]}
@@ -42,7 +43,7 @@ for ((j = 0; j < n; ++j)); do
 	genstr $LENGTH
 	rm main.hex
 	make RV_USERLIBS="multicmp.elf ctz.elf" RVUSERCFLAGS="-DBENCH" main.hex 1>/dev/null 2>/dev/null
-	if [[ $LENGTH -lt 8000 ]]; then
+	if [[ $LENGTH -lt 6000 ]]; then
 		DURATION=500000
 	elif [[ $LENGTH -lt 10000 ]]; then
 		DURATION=800000
