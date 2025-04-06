@@ -5,7 +5,7 @@
 `define NRV_FREQ 1
 
 
-`define NRV_FEMTORV32_QUARK_SIMD       // RV32I (the most elementary femtorv)
+`define NRV_FEMTORV32_QUARK_VEC       // RV32I the core with the custom extension
 //`define NRV_FEMTORV32_ELECTRON    // RV32IM
 //`define NRV_FEMTORV32_INTERMISSUM // RV32IMzCSR
 //`define NRV_FEMTORV32_GRACILIS      // RV32IMCzCSR

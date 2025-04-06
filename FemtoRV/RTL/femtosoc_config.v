@@ -130,8 +130,8 @@
 
 `include "PROCESSOR/utils.v"
 
-`ifdef NRV_FEMTORV32_QUARK_SIMD
- `include "PROCESSOR/femtorv32_quark_simd.v"
+`ifdef NRV_FEMTORV32_QUARK_VEC
+ `include "PROCESSOR/femtorv32_quark_vec.v"
 `endif
 
 `ifdef NRV_FEMTORV32_QUARK
