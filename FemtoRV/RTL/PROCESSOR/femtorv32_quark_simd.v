@@ -102,7 +102,7 @@ module FemtoRV32(
 
    reg [31:0] rs1;
    reg [31:0] rs2;
-   reg [31:0] rs [SIMD_REG_COUNT:3];
+   reg [31:0] rs [VEC_REG_COUNT:3];
 
    (* no_rw_check *)
    reg [31:0] registerFile [31:0];
@@ -117,18 +117,18 @@ module FemtoRV32(
     // MultiCmp
     /***************************************************************************/
 
-    /* SIMD_REG_COUNT can be from {2..8} */
-    parameter SIMD_REG_COUNT = 8;
+    /* VEC_REG_COUNT can be from {2..8} */
+    parameter VEC_REG_COUNT = 8;
 
     initial begin
-        if (SIMD_REG_COUNT < 2 || SIMD_REG_COUNT > 8) begin
-            $error("SIMD_REG_COUNT can be between {2..8}");
+        if (VEC_REG_COUNT < 2 || VEC_REG_COUNT > 8) begin
+            $error("VEC_REG_COUNT can be between {2..8}");
 	    $finish;
         end
     end
 
     // Mapping rs -> rv32i register index
-    localparam [5 * 8 - 1 : 0] simdId = {
+    localparam [5 * 8 - 1 : 0] vecRegId = {
         5'd31,
 	5'd30,
 	5'd29,
@@ -142,14 +142,14 @@ module FemtoRV32(
     wire [7:0] multiCmpOp = funct3Is;
     wire [7:0] byteValCmp = isMultiCmpImm ? Iimm[7:0] : rs1[7:0];
 
-    wire [(SIMD_REG_COUNT * 4 - 1):0] multiCmp;
+    wire [(VEC_REG_COUNT * 4 - 1):0] multiCmp;
     assign multiCmp[3:0] = {
         (rs2[31:24] == byteValCmp),
 	(rs2[23:16] == byteValCmp),
 	(rs2[15:8]  == byteValCmp),
 	(rs2[7:0]   == byteValCmp)
     };
-    for (i = 3; i <= SIMD_REG_COUNT; i = i + 1) begin
+    for (i = 3; i <= VEC_REG_COUNT; i = i + 1) begin
 	assign multiCmp[(i - 2) * 4 +: 4] = {
             (rs[i][31:24] == byteValCmp),
 	    (rs[i][23:16] == byteValCmp),
@@ -157,22 +157,22 @@ module FemtoRV32(
 	    (rs[i][7:0]   == byteValCmp)
         };
     end
-    assign multiCmp[SIMD_REG_COUNT * 4 - 1 -: 4] = {
+    assign multiCmp[VEC_REG_COUNT * 4 - 1 -: 4] = {
         (rs1[31:24] == byteValCmp),
 	(rs1[23:16] == byteValCmp),
 	(rs1[15:8]  == byteValCmp),
 	(rs1[7:0]   == byteValCmp)
     };
 
-    wire [(SIMD_REG_COUNT - 1):0] prefix_bitmask;
-    assign prefix_bitmask[SIMD_REG_COUNT - 1] = multiCmpOp[SIMD_REG_COUNT - 1];
-    for (i = SIMD_REG_COUNT - 1; i > 0; i = i - 1) begin
+    wire [(VEC_REG_COUNT - 1):0] prefix_bitmask;
+    assign prefix_bitmask[VEC_REG_COUNT - 1] = multiCmpOp[VEC_REG_COUNT - 1];
+    for (i = VEC_REG_COUNT - 1; i > 0; i = i - 1) begin
         assign prefix_bitmask[i - 1] = multiCmpOp[i - 1] | prefix_bitmask[i];
     end
 
     wire [31:0] multiCmpRes;
     for (i = 0; i <= 7; i = i + 1) begin
-        if (i < SIMD_REG_COUNT)
+        if (i < VEC_REG_COUNT)
             assign multiCmpRes[i * 4 +: 4] = multiCmp[i * 4 +: 4] & {4{prefix_bitmask[i]}};
         else
             assign multiCmpRes[i * 4 +: 4] = 4'b0000;
@@ -450,11 +450,11 @@ module FemtoRV32(
 
         state[WAIT_INSTR_bit]: begin
            if(!mem_rbusy) begin // may be high when executing from SPI flash
-              rs2 <= registerFile[(memRdataIsMultiCmp(mem_rdata[6:2]) ? simdId[9:5] : mem_rdata[24:20])];
-              for (j = 3; j <= SIMD_REG_COUNT; j = j + 1) begin
-                  rs[j] <= registerFile[simdId[(j - 1) * 5 +: 5]];
+              rs2 <= registerFile[(memRdataIsMultiCmp(mem_rdata[6:2]) ? vecRegId[9:5] : mem_rdata[24:20])];
+              for (j = 3; j <= VEC_REG_COUNT; j = j + 1) begin
+                  rs[j] <= registerFile[vecRegId[(j - 1) * 5 +: 5]];
               end
-	      rs1 <= registerFile[((mem_rdata[6:2] == 5'b10000) ? simdId[4:0] : mem_rdata[19:15])];
+	      rs1 <= registerFile[((mem_rdata[6:2] == 5'b10000) ? vecRegId[4:0] : mem_rdata[19:15])];
               instr <= mem_rdata[31:2]; // Bits 0 and 1 are ignored (see
               state <= EXECUTE;         // also the declaration of instr).
            end

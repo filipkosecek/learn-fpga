@@ -22,7 +22,7 @@ genstr () {
 }
 
 setup_CPU () {
-	sed -i "s/\\(parameter SIMD_REG_COUNT = \\)\\([2-8]\\);/\\1${MAXREGCOUNT};/g" ../../RTL/PROCESSOR/femtorv32_quark_simd.v
+	sed -i "s/\\(parameter VEC_REG_COUNT = \\)\\([2-8]\\);/\\1${MAXREGCOUNT};/g" ../../RTL/PROCESSOR/femtorv32_quark_simd.v
 }
 
 replace_nops () {
