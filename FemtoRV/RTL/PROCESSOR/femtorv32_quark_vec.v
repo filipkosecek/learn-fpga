@@ -149,12 +149,12 @@ module FemtoRV32(
     localparam [5 * 8 - 1 : 0] vecRegId = {
         5'd16,
 	5'd15,
-	5'd13,
 	5'd30,
 	5'd29,
 	5'd6,
 	5'd5,
-	5'd17
+	5'd7,
+	5'd31
     };
     */
 
