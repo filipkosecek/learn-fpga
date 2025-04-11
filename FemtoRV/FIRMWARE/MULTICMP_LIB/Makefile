@@ -5,7 +5,9 @@ REPLACEMENTS=(00058550 00059550 0005a550 0005b550 0005c550 0005d550 0005e550 000
 ASFLAGS=-march=rv32i -mabi=ilp32
 
 multicmp.elf: multicmp.S
-	$(RVAS) $(ASFLAGS) $< -o $@
+	$(RVGCC) -E -o multicmp_preprocessed.S $<
+	$(RVAS) $(ASFLAGS) multicmp_preprocessed.S -o $@
+	rm multicmp_preprocessed.S
 	xxd multicmp.elf multicmp.hex
 	python3 replace_nops.py < multicmp.hex | xxd -r > multicmp.elf
 	rm -f multicmp.hex
