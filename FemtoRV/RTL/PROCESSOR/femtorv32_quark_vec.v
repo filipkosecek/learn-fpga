@@ -137,7 +137,7 @@ module FemtoRV32(
        5'd7,
        5'd6,
        5'd5,
-       5'd10
+       5'd17
     };
 
     // This setup infers to 16 bram blocks for some reason

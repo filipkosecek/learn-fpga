@@ -72,7 +72,7 @@ lw t3, 12(a0)
 lw t4, 16(a0)
 lw t5, 20(a0)
 lw t6, 24(a0)
-lw a0, 28(a0)
+lw x17, 28(a0)
 nop # multicmp32 a0, 0
 jalr t1, ra, 0
 
