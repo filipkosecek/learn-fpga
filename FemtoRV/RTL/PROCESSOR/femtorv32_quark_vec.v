@@ -128,6 +128,7 @@ module FemtoRV32(
         end
     end
 
+`ifndef VECTOR_BLOCK_BRAM
     // Mapping rs -> rv32i register index
     localparam [5 * 8 - 1 : 0] vecRegId = {
        5'd31,
@@ -140,23 +141,23 @@ module FemtoRV32(
        5'd17
     };
 
+`else
     // This setup infers to 16 bram blocks for some reason
     // unlike the original one.
     // To work with this, change RAM size to 8192 bytes
     // in RTL/CONFIG/ice40hx8k_evb_config.v, FIRMWARE/CRT/spiflash_ice40hx8k_evb.ld
     // and the assembly code loading the registers.
-    /*
     localparam [5 * 8 - 1 : 0] vecRegId = {
         5'd16,
-	5'd15,
-	5'd30,
-	5'd29,
-	5'd6,
-	5'd5,
-	5'd7,
-	5'd31
+        5'd15,
+        5'd30,
+        5'd29,
+        5'd6,
+        5'd5,
+        5'd7,
+        5'd31
     };
-    */
+`endif
 
     wire isMultiCmp = isMultiCmpReg | isMultiCmpImm;
     wire [7:0] multiCmpOp = funct3Is;
