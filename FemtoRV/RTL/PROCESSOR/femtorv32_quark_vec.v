@@ -105,7 +105,9 @@ module FemtoRV32(
    reg [31:0] rs [VEC_REG_COUNT:3];
 
    (* no_rw_check *)
-//   (* ram_style = "block" *)
+`ifdef VECTOR_FORCE_BRAM
+   (* ram_style = "block" *)
+`endif
    reg [31:0] registerFile [31:0];
 
    always @(posedge clk) begin
@@ -128,7 +130,7 @@ module FemtoRV32(
         end
     end
 
-`ifdef VECTOR_BLOCK_BRAM
+`ifdef VECTOR_FORCE_BRAM
 
     // This setup infers to 16 bram blocks for some reason
     // unlike the original one.
