@@ -161,6 +161,9 @@ module FemtoRV32(
     };
 
 `endif
+    wire [4:0] vecRegAddr [VEC_REG_COUNT - 1:0];
+    for (i = 0; i < VEC_REG_COUNT; i = i + 1)
+        assign vecRegAddr[i] = vecRegId[i * 5 +: 5];
 
     wire isMultiCmp = isMultiCmpReg | isMultiCmpImm;
     wire [7:0] multiCmpOp = funct3Is;
@@ -474,11 +477,11 @@ module FemtoRV32(
 
         state[WAIT_INSTR_bit]: begin
            if(!mem_rbusy) begin // may be high when executing from SPI flash
-              rs2 <= registerFile[(memRdataIsMultiCmp(mem_rdata[6:2]) ? vecRegId[9:5] : mem_rdata[24:20])];
+              rs2 <= registerFile[(memRdataIsMultiCmp(mem_rdata[6:2]) ? vecRegAddr[1] : mem_rdata[24:20])];
               for (j = 3; j <= VEC_REG_COUNT; j = j + 1) begin
-                  rs[j] <= registerFile[vecRegId[(j - 1) * 5 +: 5]];
+                  rs[j] <= registerFile[vecRegAddr[j - 1]];
               end
-	      rs1 <= registerFile[((mem_rdata[6:2] == 5'b10000) ? vecRegId[4:0] : mem_rdata[19:15])];
+	      rs1 <= registerFile[((mem_rdata[6:2] == 5'b10000) ? vecRegAddr[0] : mem_rdata[19:15])];
               instr <= mem_rdata[31:2]; // Bits 0 and 1 are ignored (see
               state <= EXECUTE;         // also the declaration of instr).
            end
