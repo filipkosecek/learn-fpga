@@ -9,7 +9,7 @@
 
 MEMORY {
     FLASH (rx)  : ORIGIN = 0x00830000, LENGTH = 0x100000    /* 1 MB in flash */
-    RAM   (rwx) : ORIGIN = 0x00000000, LENGTH = 0x2800      /* 10 kB in RAM  */
+    RAM   (rwx) : ORIGIN = 0x00000000, LENGTH = 0x2000      /* 10 kB in RAM  */
 }
 
 SECTIONS {
