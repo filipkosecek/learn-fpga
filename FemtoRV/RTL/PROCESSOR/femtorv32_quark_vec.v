@@ -173,25 +173,25 @@ module FemtoRV32(
 
     wire [(VEC_REG_COUNT * 4 - 1):0] multiCmp;
     assign multiCmp[3:0] = {
+        (rs1[31:24] == byteValCmp),
+	(rs1[23:16] == byteValCmp),
+	(rs1[15:8]  == byteValCmp),
+	(rs1[7:0]   == byteValCmp)
+    };
+    assign multiCmp[7:4] = {
         (rs2[31:24] == byteValCmp),
 	(rs2[23:16] == byteValCmp),
 	(rs2[15:8]  == byteValCmp),
 	(rs2[7:0]   == byteValCmp)
     };
     for (i = 3; i <= VEC_REG_COUNT; i = i + 1) begin
-	assign multiCmp[(i - 2) * 4 +: 4] = {
+	assign multiCmp[(i - 1) * 4 +: 4] = {
             (rs[i][31:24] == byteValCmp),
 	    (rs[i][23:16] == byteValCmp),
 	    (rs[i][15:8]  == byteValCmp),
 	    (rs[i][7:0]   == byteValCmp)
         };
     end
-    assign multiCmp[VEC_REG_COUNT * 4 - 1 -: 4] = {
-        (rs1[31:24] == byteValCmp),
-	(rs1[23:16] == byteValCmp),
-	(rs1[15:8]  == byteValCmp),
-	(rs1[7:0]   == byteValCmp)
-    };
 
     wire [(VEC_REG_COUNT - 1):0] prefix_bitmask;
     assign prefix_bitmask[VEC_REG_COUNT - 1] = multiCmpOp[VEC_REG_COUNT - 1];
@@ -199,10 +199,12 @@ module FemtoRV32(
         assign prefix_bitmask[i - 1] = multiCmpOp[i - 1] | prefix_bitmask[i];
     end
 
+    wire [31:0] multiCmpTmp = isMultiCmpImm ? multiCmp : multiCmp >> 4;
+
     wire [31:0] multiCmpRes;
     for (i = 0; i <= 7; i = i + 1) begin
         if (i < VEC_REG_COUNT)
-            assign multiCmpRes[i * 4 +: 4] = multiCmp[i * 4 +: 4] & {4{prefix_bitmask[i]}};
+            assign multiCmpRes[i * 4 +: 4] = multiCmpTmp[i * 4 +: 4] & {4{prefix_bitmask[i]}};
         else
             assign multiCmpRes[i * 4 +: 4] = 4'b0000;
     end
@@ -479,11 +481,11 @@ module FemtoRV32(
 
         state[WAIT_INSTR_bit]: begin
            if(!mem_rbusy) begin // may be high when executing from SPI flash
+	      rs1 <= registerFile[((mem_rdata[6:2] == 5'b10000) ? vecRegAddr[0] : mem_rdata[19:15])];
               rs2 <= registerFile[(memRdataIsMultiCmp(mem_rdata[6:2]) ? vecRegAddr[1] : mem_rdata[24:20])];
               for (j = 3; j <= VEC_REG_COUNT; j = j + 1) begin
                   rs[j] <= registerFile[vecRegAddr[j - 1]];
               end
-	      rs1 <= registerFile[((mem_rdata[6:2] == 5'b10000) ? vecRegAddr[0] : mem_rdata[19:15])];
               instr <= mem_rdata[31:2]; // Bits 0 and 1 are ignored (see
               state <= EXECUTE;         // also the declaration of instr).
            end
