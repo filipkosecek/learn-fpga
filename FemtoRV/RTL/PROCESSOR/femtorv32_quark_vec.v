@@ -124,7 +124,7 @@ module FemtoRV32(
     parameter VEC_REG_COUNT = 8;
 
     initial begin
-        if (VEC_REG_COUNT < 2 || VEC_REG_COUNT > 8) begin
+        if (VEC_REG_COUNT < 3 || VEC_REG_COUNT > 8) begin
             $error("VEC_REG_COUNT can be between {2..8}");
 	    $finish;
         end
