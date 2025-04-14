@@ -212,30 +212,30 @@ module FemtoRV32(
     /***************************************************************************/
     // CTZ
     /***************************************************************************/
-    wire [7:0] isNibNonZero;
-    wire [1:0] nibbleCTZ [7:0];
+    wire [7:0] isNibZero;
+    wire [1:0] nlc [7:0];
+    wire [2:0] bne;
     wire [5:0] bitmanipRes;
     wire [31:0] bitmanipTarget = rs1;
 
     for (i = 0; i <= 7; i = i + 1) begin
-        assign isNibNonZero[i] = |bitmanipTarget[i * 4 +: 4];
-        assign nibbleCTZ[i] = {
+        assign isNibZero[i] = !bitmanipTarget[i * 4 +: 4];
+        assign nlc[i] = {
 		(~bitmanipTarget[i * 4 + 0] & ~bitmanipTarget[i * 4 + 1]),
 		(~bitmanipTarget[i * 4 + 0] & (bitmanipTarget[i * 4 + 1] | ~bitmanipTarget[i * 4 + 2]))
 	};
     end
 
-    assign bitmanipRes[4:0] =
-                isNibNonZero[0] ? {3'b000, nibbleCTZ[0]} :
-                isNibNonZero[1] ? {3'b001, nibbleCTZ[1]} :
-                isNibNonZero[2] ? {3'b010, nibbleCTZ[2]} :
-                isNibNonZero[3] ? {3'b011, nibbleCTZ[3]} :
-		isNibNonZero[4] ? {3'b100, nibbleCTZ[4]} :
-		isNibNonZero[5] ? {3'b101, nibbleCTZ[5]} :
-		isNibNonZero[6] ? {3'b110, nibbleCTZ[6]} :
-		{3'b111, nibbleCTZ[7]}                   ;
+    assign bne = {
+        &isNibZero[3:0],
+        &isNibZero[1:0] & (~isNibZero[2] | ~isNibZero[3] | &isNibZero[5:4]),
+        (isNibZero[0] & (~isNibZero[1] | isNibZero[2] & ~isNibZero[3])) |
+        (isNibZero[0] & isNibZero[2] & isNibZero[4] & (~isNibZero[5] | isNibZero[6]))
+    };
 
-    assign bitmanipRes[5] = (bitmanipTarget == 0);
+    assign bitmanipRes[4:0] = {bne, nlc[bne]};
+
+    assign bitmanipRes[5] = !bitmanipTarget;
 
    /***************************************************************************/
    // The ALU. Does operations and tests combinatorially, except shifts.
