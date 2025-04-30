@@ -81,6 +81,12 @@
       defparam pll.DIVQ = 3'b100;
       defparam pll.FILTER_RANGE = 3'b101;
      end
+     53: begin
+      defparam pll.DIVR = 4'b0001;
+      defparam pll.DIVF = 7'b0010000;
+      defparam pll.DIVQ = 3'b100;
+      defparam pll.FILTER_RANGE = 3'b100;
+     end
      55: begin
       defparam pll.DIVR = 4'b0100;
       defparam pll.DIVF = 7'b0101011;
