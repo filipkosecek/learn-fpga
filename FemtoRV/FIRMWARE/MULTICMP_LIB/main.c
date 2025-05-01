@@ -106,33 +106,36 @@ static void test_strlen(void)
 
 int main(void)
 {
-	DELAY_AND_BLINK
-	test_strlen();
-	DELAY_AND_UNBLINK
-	DELAY_AND_BLINK
-	test_mcmp4();
-	DELAY_AND_UNBLINK
-	DELAY_AND_BLINK
-	test_mcmp8();
-	DELAY_AND_UNBLINK
-	DELAY_AND_BLINK
-	test_mcmp12();
-	DELAY_AND_UNBLINK
-	DELAY_AND_BLINK
-	test_mcmp16();
-	DELAY_AND_UNBLINK
-	DELAY_AND_BLINK
-	test_mcmp20();
-	DELAY_AND_UNBLINK
-	DELAY_AND_BLINK
-	test_mcmp24();
-	DELAY_AND_UNBLINK
-	DELAY_AND_BLINK
-	test_mcmp28();
-	DELAY_AND_UNBLINK
-	DELAY_AND_BLINK
-	test_mcmp32();
-	DELAY_AND_UNBLINK
-	while (1);
+	for (;;) {
+		putchar(getchar());
+		putchar('\n');
+		DELAY_AND_BLINK
+		test_strlen();
+		DELAY_AND_UNBLINK
+		DELAY_AND_BLINK
+		test_mcmp4();
+		DELAY_AND_UNBLINK
+		DELAY_AND_BLINK
+		test_mcmp8();
+		DELAY_AND_UNBLINK
+		DELAY_AND_BLINK
+		test_mcmp12();
+		DELAY_AND_UNBLINK
+		DELAY_AND_BLINK
+		test_mcmp16();
+		DELAY_AND_UNBLINK
+		DELAY_AND_BLINK
+		test_mcmp20();
+		DELAY_AND_UNBLINK
+		DELAY_AND_BLINK
+		test_mcmp24();
+		DELAY_AND_UNBLINK
+		DELAY_AND_BLINK
+		test_mcmp28();
+		DELAY_AND_UNBLINK
+		DELAY_AND_BLINK
+		test_mcmp32();
+		DELAY_AND_UNBLINK
+	}
 	return 0;
 }
