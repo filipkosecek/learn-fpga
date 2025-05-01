@@ -1,3 +1,6 @@
+#ifndef MULTICMP_H
+#define MULTICMP_H
+
 #include <stdint.h>
 
 uint32_t multicmp4_imm0(const void *mem);
@@ -18,3 +21,5 @@ uint32_t multicmp24(const void *mem, uint8_t byte_val);
 uint32_t multicmp28(const void *mem, uint8_t byte_val);
 
 uint32_t ctz(uint32_t target);
+
+#endif
