@@ -95,7 +95,7 @@ endif
 
 ################################################################################
 
-RVINCS=-I$(FIRMWARE_DIR)/LIBFEMTOGL -I$(FIRMWARE_DIR)/LIBFEMTORV32 -I$(FIRMWARE_DIR)/LIBFEMTOC -I$(FIRMWARE_DIR)/MULTICMP_LIB
+RVINCS=-I$(FIRMWARE_DIR)/LIBFEMTOGL -I$(FIRMWARE_DIR)/LIBFEMTORV32 -I$(FIRMWARE_DIR)/LIBFEMTOC -I$(FIRMWARE_DIR)/LIBMULTICMP
 RVCFLAGS=$(OPTIMIZE) $(RVINCS) $(DEVICES) -fno-pic -march=$(ARCH) -mabi=$(ABI) \
          -fno-stack-protector -w -Wl,--no-relax 
         # Note: --no-relax because I'm using gp for fast access to mapped IO.
@@ -122,7 +122,7 @@ FEMTORV32_LIBS=$(FIRMWARE_DIR)/CRT/syscalls.o \
 	       -L$(FIRMWARE_DIR)/LIBFEMTOGL\
 	       -L$(FIRMWARE_DIR)/LIBFEMTORV32\
 	       -L$(FIRMWARE_DIR)/LIBFEMTOC\
-	       -L$(FIRMWARE_DIR)/MULTICMP_LIB\
+	       -L$(FIRMWARE_DIR)/LIBMULTICMP\
 	       -lfemtoGL -lfemtorv32 -lfemtoc -lm -lmulticmp
 
 # Libraries to link with small executable 
