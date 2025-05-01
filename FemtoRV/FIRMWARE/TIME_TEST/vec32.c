@@ -3,7 +3,6 @@
 #include <stddef.h>
 
 #include "multicmp.h"
-#include "ctz.h"
 #include "target.h"
 
 #define ITERCOUNT 10000
