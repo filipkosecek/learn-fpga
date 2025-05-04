@@ -130,10 +130,9 @@ module FemtoRV32(
         end
     end
 
-`ifdef VECTOR_FORCE_BRAM
+`ifndef ORIG_VEC_ARRAY
 
-    // This setup infers to 16 bram blocks for some reason
-    // unlike the original one.
+    // This setup infers to 16 bram blocks unlike the original one.
     // To work with this, change RAM size to 8192 bytes
     // in RTL/CONFIG/ice40hx8k_evb_config.v, FIRMWARE/CRT/spiflash_ice40hx8k_evb.ld
     // and the assembly code loading the registers.

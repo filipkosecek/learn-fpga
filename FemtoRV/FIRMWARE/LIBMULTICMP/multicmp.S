@@ -1,6 +1,6 @@
 // MULTICMP register block
 // expanded by C preprocessor
-#ifdef VECTOR_FORCE_BRAM
+#ifndef ORIG_VEC_ARRAY
 
 #define RS1 x31
 #define RS2 x7
