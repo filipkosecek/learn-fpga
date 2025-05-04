@@ -24,7 +24,10 @@ get_random_length () {
 }
 
 
-if [[ $# -eq 2 ]]; then
+if [[ $# -ne 0 ]] && [[ $# -ne 2 ]]; then
+	echo "Wrong number of arguments." 1>&2
+	exit 1
+else
 	if [[ $1 != "-r" ]]; then
 		echo "The only supported option is -r." 1>&2
 		exit 1
