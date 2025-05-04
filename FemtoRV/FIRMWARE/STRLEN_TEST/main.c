@@ -22,7 +22,10 @@ volatile static uint32_t *led = LED;
 	} \
 	len += ctz(x); \
 	end = cycles(); \
-	print_result(len, end - beg);
+	if (len != (sizeof(str) - 32)) \
+		puts("!!Wront result!!"); \
+	else \
+		print_result(len, end - beg);
 
 static print_result(int length, int cycle_count)
 {
