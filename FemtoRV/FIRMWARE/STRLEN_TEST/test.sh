@@ -19,21 +19,19 @@ genstr () {
 
 get_random_length () {
 	rand=$(shuf -i 0-20000 -n 1)
-	echo $rand
 	return $rand
 }
 
-
-if [[ $# -ne 0 ]] && [[ $# -ne 2 ]]; then
-	echo "Wrong number of arguments." 1>&2
-	exit 1
-else
+if [[ $# -eq 2 ]]; then
 	if [[ $1 != "-r" ]]; then
 		echo "The only supported option is -r." 1>&2
 		exit 1
 	fi
 	IS_RANDOM=r
 	n=$2
+elif [[ $# -ne 0 ]]; then
+	echo "Wrong number of arguments." 1>&2
+	exit 1
 fi
 
 make -C ../../ BENCH.icarus_firmware_config
@@ -44,8 +42,8 @@ for ((j = 0; j < n; ++j)); do
 		LENGTH=$(shuf -i 0-20000 -n 1)
 	fi
 	genstr $LENGTH
-	rm main.hex
-	make RV_USERLIBS="multicmp.elf ctz.elf" RVUSERCFLAGS="-DBENCH" main.hex 1>/dev/null 2>/dev/null
+	rm -f main.hex
+	make RVUSERCFLAGS="-DBENCH" main.hex
 	if [[ $LENGTH -lt 6000 ]]; then
 		DURATION=500000
 	elif [[ $LENGTH -lt 10000 ]]; then
