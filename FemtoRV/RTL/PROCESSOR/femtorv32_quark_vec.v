@@ -90,9 +90,9 @@ module FemtoRV32(
    wire isLUI     =  (instr[6:2] == 5'b01101); // rd <- Uimm
    wire isAUIPC   =  (instr[6:2] == 5'b00101); // rd <- PC + Uimm
    wire isBranch  =  (instr[6:2] == 5'b11000); // if(rs1 OP rs2) PC<-PC+Bimm
-   wire isMultiCmpImm = (instr[6:2] == 5'b10000);
-   wire isMultiCmpReg = (instr[6:2] == 5'b10100);
-   wire isBitmanip = (instr[6:2] == 5'b10101);
+   wire isMultiCmpImm = (instr[6:2] == 5'b10000); // multicmp - the immediate variant
+   wire isMultiCmpReg = (instr[6:2] == 5'b10100); // multicmp - the register variant
+   wire isBitmanip = (instr[6:2] == 5'b10101);    // bitmanip/CTZ
 
    wire isALU = isALUimm | isALUreg;
 
@@ -102,6 +102,11 @@ module FemtoRV32(
 
    reg [31:0] rs1;
    reg [31:0] rs2;
+   // Additional temporary registers used to fetch the data from the register
+   // file to stick to Yosys block memory pattern. They are grouped in an
+   // array for convenience. The array is unrolled to individual registers
+   // during synthesis as the registers are only indexed by generate variables
+   // in generate blocks.
    reg [31:0] rs [VEC_REG_COUNT:3];
 
    (* no_rw_check *)
@@ -130,12 +135,12 @@ module FemtoRV32(
         end
     end
 
+// Parameter vecRegId is used to map the vector register indexes to the RV32I
+// register numbers/indexes. The default is the configuration optimized
+// for the BRAM usage.
 `ifndef ORIG_VEC_ARRAY
 
     // This setup infers to 16 bram blocks unlike the original one.
-    // To work with this, change RAM size to 8192 bytes
-    // in RTL/CONFIG/ice40hx8k_evb_config.v, FIRMWARE/CRT/spiflash_ice40hx8k_evb.ld
-    // and the assembly code loading the registers.
     localparam [5 * 8 - 1 : 0] vecRegId = {
        5'd16,
        5'd15,
@@ -149,7 +154,8 @@ module FemtoRV32(
 
 `else
 
-    // Mapping rs -> rv32i register index
+    // The original mapping. To work with this, set the ORIG_VEC_ARRAY
+    // in FIRMWARE/LIBMULTICMP/multicmp.S
     localparam [5 * 8 - 1 : 0] vecRegId = {
        5'd31,
        5'd30,
@@ -162,14 +168,18 @@ module FemtoRV32(
     };
 
 `endif
+
+    // A new variable to get rid of the indexed part-select in vecRegId.
     wire [4:0] vecRegAddr [VEC_REG_COUNT - 1:0];
     for (i = 0; i < VEC_REG_COUNT; i = i + 1)
         assign vecRegAddr[i] = vecRegId[i * 5 +: 5];
 
+    // Detect the instruction parameters.
     wire isMultiCmp = isMultiCmpReg | isMultiCmpImm;
     wire [7:0] multiCmpOp = funct3Is;
     wire [7:0] byteValCmp = isMultiCmpImm ? Iimm[7:0] : rs1[7:0];
 
+    // The bitmap computation.
     wire [(VEC_REG_COUNT * 4 - 1):0] multiCmp;
     assign multiCmp[3:0] = {
         (rs1[31:24] == byteValCmp),
@@ -192,14 +202,21 @@ module FemtoRV32(
         };
     end
 
+    // The prefix mask used to zero the unused parts of the resulting bitmap.
     wire [(VEC_REG_COUNT - 1):0] prefix_bitmask;
     assign prefix_bitmask[VEC_REG_COUNT - 1] = multiCmpOp[VEC_REG_COUNT - 1];
     for (i = VEC_REG_COUNT - 1; i > 0; i = i - 1) begin
         assign prefix_bitmask[i - 1] = multiCmpOp[i - 1] | prefix_bitmask[i];
     end
 
+    // The result is shifted to the right by 4 if the register variant is
+    // being used to hide the bitmap range corresponding to the first
+    // vector register.
     wire [31:0] multiCmpTmp = isMultiCmpImm ? multiCmp : multiCmp >> 4;
 
+    // Apply the mask. This code also writes zeros to the range which
+    // is beyond the size of the configured vector array as the result
+    // size is always 32 bits.
     wire [31:0] multiCmpRes;
     for (i = 0; i <= 7; i = i + 1) begin
         if (i < VEC_REG_COUNT)
@@ -216,6 +233,8 @@ module FemtoRV32(
     wire [5:0] bitmanipRes;
     wire [31:0] bitmanipTarget = rs1;
 
+    // Count the trailing zeros in each nibble and detect the non-zero
+    // nibbles.
     for (i = 0; i <= 7; i = i + 1) begin
         assign isNibNonZero[i] = |bitmanipTarget[i * 4 +: 4];
         assign nibbleCTZ[i] = {
@@ -224,6 +243,7 @@ module FemtoRV32(
 	};
     end
 
+    // Determine the final value.
     assign bitmanipRes[4:0] =
                 isNibNonZero[0] ? {3'b000, nibbleCTZ[0]} :
                 isNibNonZero[1] ? {3'b001, nibbleCTZ[1]} :
@@ -234,6 +254,7 @@ module FemtoRV32(
 		isNibNonZero[6] ? {3'b110, nibbleCTZ[6]} :
 		{3'b111, nibbleCTZ[7]}                   ;
 
+    // Detect the error state.
     assign bitmanipRes[5] = (bitmanipTarget == 0);
 
    /***************************************************************************/
@@ -464,6 +485,7 @@ module FemtoRV32(
    wire needToWait = isLoad | isStore | isALU & funct3IsShift;
 `endif
 
+   // Computes whether the opcode corresponds to either of the multicmp variants.
    function memRdataIsMultiCmp (input [6:2] mem_rdata);
       memRdataIsMultiCmp = mem_rdata[6] & ~mem_rdata[5] & ~mem_rdata[3] & ~mem_rdata[2];
    endfunction
@@ -480,8 +502,13 @@ module FemtoRV32(
 
         state[WAIT_INSTR_bit]: begin
            if(!mem_rbusy) begin // may be high when executing from SPI flash
+              // The first two rs registers serve as regular operands
+	      // for instructions other than multicmp. Register instr is not
+              // fetched yet, so the address of the register is determined
+              // based on mem_rdata (the opcode part).
 	      rs1 <= registerFile[((mem_rdata[6:2] == 5'b10000) ? vecRegAddr[0] : mem_rdata[19:15])];
               rs2 <= registerFile[(memRdataIsMultiCmp(mem_rdata[6:2]) ? vecRegAddr[1] : mem_rdata[24:20])];
+              // Load all remaining vector registers from the register file.
               for (j = 3; j <= VEC_REG_COUNT; j = j + 1) begin
                   rs[j] <= registerFile[vecRegAddr[j - 1]];
               end
