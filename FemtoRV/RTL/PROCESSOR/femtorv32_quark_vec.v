@@ -120,7 +120,7 @@ module FemtoRV32(
     // MultiCmp
     /***************************************************************************/
 
-    /* VEC_REG_COUNT can be from {2..8} */
+    /* VEC_REG_COUNT can be from {3..8} */
     parameter VEC_REG_COUNT = 8;
 
     initial begin
